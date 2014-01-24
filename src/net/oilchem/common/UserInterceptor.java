@@ -1,7 +1,5 @@
 package net.oilchem.common;
 
-import net.oilchem.common.bean.Config;
-import net.oilchem.common.bean.FrequentCheck;
 import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.user.User;
 import net.oilchem.user.UserRepository;
@@ -9,18 +7,13 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import static java.lang.System.currentTimeMillis;
 import static net.oilchem.common.bean.Config.SESSION_MAX_INTERVAL;
-import static net.oilchem.common.bean.Config.loginCache;
 import static net.oilchem.common.utils.IPMacUtil.validBindIp;
-import static net.oilchem.common.utils.Md5Util.generatePassword;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -43,16 +36,12 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
 
         Method method = ((HandlerMethod) handler).getMethod();
         boolean needLogin = hasLoginAnotation(method.getDeclaringClass(), method);
-        boolean frequentCheck = hasFrequentCheckAnotation(method.getDeclaringClass(), method);
 
         boolean result = false;
         //是否需要登录
         if (!needLogin) {
             result = true;
         } else {
-
-            //检查登陆是否过于频繁
-            if (frequentCheck && tooFrequent(request, response)) return result;
 
             //判断用户登陆
             if (checkUserLogin(request)) {
@@ -67,33 +56,6 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
         return result;
     }
 
-    /**
-     * 用户登录太频繁
-     *
-     * @param request
-     * @param response
-     * @return
-     * @throws ServletException
-     * @throws IOException
-     */
-    private boolean tooFrequent(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        String username = request.getAttribute("username") == null ? null : String.valueOf(request.getAttribute("username"));
-        username = (username == null ? request.getParameter("username") : username);
-
-        Long lastLogin = loginCache.get(username);
-        if (lastLogin == null) {
-            lastLogin = 0l;
-            loginCache.put(username, lastLogin);
-        }
-
-        if (currentTimeMillis() - lastLogin < Config.LOGIN_IDLE) {
-            request.getRequestDispatcher("/user/toofrequent.do").forward(request, response);
-            return true;
-        }
-        loginCache.put(username, currentTimeMillis());
-        return false;
-    }
 
     /**
      * 检查用户登录
@@ -108,6 +70,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
         String clientIp = null;
         String username = null;
         String password = null;
+        String accessToken = null;
 
         Object userObj = request.getSession().getAttribute("user");
         if (userObj != null) {
@@ -119,6 +82,8 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
             username = (username == null ? request.getParameter("username") : username);
             password = request.getAttribute("password") == null ? null : String.valueOf(request.getAttribute("password"));
             password = (password == null ? request.getParameter("password") : password);
+            accessToken = request.getAttribute("accessToken") == null ? null : String.valueOf(request.getAttribute("accessToken"));
+            accessToken = (accessToken == null ? request.getParameter("accessToken") : accessToken);
         }
 
         if (isNotBlank(username)) {
@@ -127,15 +92,15 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
             if(user!=null){
                 secretPass = user.getPassword();
             }else if(isNotBlank(password) ){
-                secretPass = generatePassword(password);
+//                secretPass = generatePassword(password);
             }else {
                 return false;
             }
 
             //检查用户信息是否完整来自于数据库
             Boolean fromDB = user != null && user.getIpRight() != null;
-            user = !fromDB ? userRepository
-                    .findByUsernameAndPassword(username.replace("'", ""), secretPass) : user;
+//            user = !fromDB ? userRepository
+//                    .findByUsernameAndPassword(username.replace("'", ""), secretPass) : user;
 
             //获得客户端ip
             clientIp = getIpAddr(request);
@@ -147,7 +112,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
         if (okUser) {
             request.getSession().setMaxInactiveInterval(SESSION_MAX_INTERVAL);
             request.getSession().setAttribute("user", user);
-            userRepository.updateLoginInfo(user, clientIp);
+//            userRepository.updateLoginInfo(user, clientIp);
             return true;
         } else {
             request.getSession().setAttribute("user", null);
@@ -156,14 +121,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
     }
 
     private boolean checkInterfaceRight(HttpServletRequest request, User user, String clientIp) {
-        boolean okUser;//判断进出口接口
-        if (request.getServletPath().startsWith("/trade")) {
-            okUser = user == null ? false : checkIP(clientIp, user.getIpRight()) && isNotBlank(user.getStartYearMonth());
-
-        } else {    //判断价格接口
-            okUser = user == null ? false : checkIP(clientIp, user.getIpRight())
-                    && user.getPriceFlag() != null && user.getPriceFlag().equals(1) && user.getStartDate() != null;
-        }
+        boolean okUser=true;//判断进出口接口
         return okUser;
     }
 
@@ -277,19 +235,5 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
         }
     }
 
-    private boolean hasFrequentCheckAnotation(Class clazz, Method method) {
-
-        FrequentCheck methodAnnotation = method.getAnnotation(FrequentCheck.class);
-        if (method.isAnnotationPresent(FrequentCheck.class)) {
-            return methodAnnotation.value();
-        }
-
-        Annotation clazzAnnotation = clazz.getAnnotation(FrequentCheck.class);
-        if (clazz.isAnnotationPresent(FrequentCheck.class)) {
-            return ((FrequentCheck) clazzAnnotation).value();
-        } else {
-            return false;
-        }
-    }
 }
 

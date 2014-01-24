@@ -15,38 +15,30 @@ public class User implements Serializable {
     Integer id;
     String username;
     String password;
+    String accessToken;
 
     String ipRight;        //ip权限
     String lastIp;         //上次登录ip
     Date lasttime;         //上次登录时间
     Integer loginTimes;   //登录次数
-    Integer priceFlag;    //0表示用没有权限查看价格，表示用户有权限查看价格
 
-    Date startDate;       //用户可查看数据的启始时间
-    Date endDate;         //用户可查看数据的结束时间
 
-    String startYearMonth;  //用户可查看进出口数据的启始年月
-    String endYearMonth;     //用户可查看进出口数据的结束年月
-
-    Integer configId;
+    Date startDate;       //到期起始日
+    Date endDate;         //到期结束日
 
     public User() {
     }
 
-    public User(Integer id, Integer configId, String username, String password,
-                String ipRight, String lastIp, Date lasttime,
-                Integer loginTimes, Integer priceFlag, Date startDate, Date endDate) {
+    public User(Integer id, String username, String password, String accessToken,
+                String ipRight, String lastIp, Date lasttime, Integer loginTimes) {
         this.id = id;
-        this.configId = configId;
         this.username = username;
         this.password = password;
+        this.accessToken = accessToken;
         this.ipRight = ipRight;
         this.lastIp = lastIp;
         this.lasttime = lasttime;
         this.loginTimes = loginTimes;
-        this.priceFlag = priceFlag;
-        this.startDate = startDate;
-        this.endDate = endDate;
     }
 
     public Integer getId() {
@@ -74,6 +66,14 @@ public class User implements Serializable {
     public User setPassword(String password) {
         this.password = password;
         return this;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
     }
 
     public String getIpRight() {
@@ -130,38 +130,4 @@ public class User implements Serializable {
         return this;
     }
 
-    public Integer getPriceFlag() {
-        return priceFlag;
-    }
-
-    public User setPriceFlag(Integer priceFlag) {
-        this.priceFlag = priceFlag;
-        return this;
-    }
-
-    public String getStartYearMonth() {
-        return startYearMonth;
-    }
-
-    public User setStartYearMonth(String startYearMonth) {
-        this.startYearMonth = startYearMonth;
-        return this;
-    }
-
-    public String getEndYearMonth() {
-        return endYearMonth;
-    }
-
-    public User setEndYearMonth(String endYearMonth) {
-        this.endYearMonth = endYearMonth;
-        return this;
-    }
-
-    public Integer getConfigId() {
-        return configId;
-    }
-
-    public void setConfigId(Integer configId) {
-        this.configId = configId;
-    }
 }
