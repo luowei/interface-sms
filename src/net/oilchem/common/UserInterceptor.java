@@ -12,8 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+import static net.oilchem.common.BaseController.getIpAddr;
 import static net.oilchem.common.bean.Config.SESSION_MAX_INTERVAL;
 import static net.oilchem.common.utils.IPMacUtil.validBindIp;
+import static net.oilchem.common.utils.Md5Util.generatePassword;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -51,7 +54,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
             }
         }
         if (!result) {
-            request.getRequestDispatcher("/user/nologin.do").forward(request, response);
+            request.getRequestDispatcher("/user/nologin").forward(request, response);
         }
         return result;
     }
@@ -65,63 +68,63 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
      */
     private boolean checkUserLogin(HttpServletRequest request) {
 
-        boolean okUser = false;
         User user = null;
-        String clientIp = null;
-        String username = null;
-        String password = null;
-        String accessToken = null;
 
+        //首从session里取用户信息
         Object userObj = request.getSession().getAttribute("user");
-        if (userObj != null) {
-            user = (User) userObj;
-            username = user.getUsername();
-            password = user.getPassword();
-        } else {
-            username = request.getAttribute("username") == null ? null : String.valueOf(request.getAttribute("username"));
+        if (userObj == null) {     //新会话
+            String username = request.getAttribute("username") == null ? null : String.valueOf(request.getAttribute("username"));
             username = (username == null ? request.getParameter("username") : username);
-            password = request.getAttribute("password") == null ? null : String.valueOf(request.getAttribute("password"));
-            password = (password == null ? request.getParameter("password") : password);
-            accessToken = request.getAttribute("accessToken") == null ? null : String.valueOf(request.getAttribute("accessToken"));
-            accessToken = (accessToken == null ? request.getParameter("accessToken") : accessToken);
-        }
 
-        if (isNotBlank(username)) {
-            //获得用户加密后的密码
-            String secretPass = null;
-            if(user!=null){
-                secretPass = user.getPassword();
-            }else if(isNotBlank(password) ){
-//                secretPass = generatePassword(password);
-            }else {
-                return false;
+            String password = request.getAttribute("password") == null ? null : String.valueOf(request.getAttribute("password"));
+            password = (password == null ? request.getParameter("password") : password);
+            password = (password == null ? generatePassword(password) : password);       //加密
+
+            String accessToken = request.getAttribute("accessToken") == null ? null : String.valueOf(request.getAttribute("accessToken"));
+            accessToken = (accessToken == null ? request.getParameter("accessToken") : accessToken);
+
+
+            //1.非第一次登录：首先根据令牌到数据库找
+            User dbUser = null;
+            if (isNotBlank(accessToken) && isBlank(username) && isBlank(password)) {
+                dbUser = userRepository.findByAccessToken(accessToken);
+                if (dbUser == null) {
+                    return false;
+                }
             }
 
-            //检查用户信息是否完整来自于数据库
-            Boolean fromDB = user != null && user.getIpRight() != null;
-//            user = !fromDB ? userRepository
-//                    .findByUsernameAndPassword(username.replace("'", ""), secretPass) : user;
+            //2.第一次登录：根据用户名、密码到数据库找
+            if (isNotBlank(username) && isNotBlank(password)) {
+                dbUser = userRepository.findByUsernameAndPassword(username, password);
+
+                if (dbUser == null) {
+                    return false;
+                } else if (isBlank(dbUser.getAccessToken())) {       //第一次登录
+                    user.setUsername(username);
+                    String token = request.getSession().getId();
+                    user.setAccessToken(token);
+                } else if (!dbUser.getAccessToken().equals(accessToken)) {
+                    return false;
+                }
+                user.setPassword(password);
+            }
 
             //获得客户端ip
-            clientIp = getIpAddr(request);
-
-            //判断是否有访问数据接口的权限
-            okUser = checkInterfaceRight(request, user, clientIp);
+            user.setLastIp(getIpAddr(request));
+        }else {    //非新会话
+            user = (User) userObj;
         }
+//        //判断是否有访问数据接口的权限
+//        okUser = checkInterfaceRight(request, user, clientIp);
 
-        if (okUser) {
-            request.getSession().setMaxInactiveInterval(SESSION_MAX_INTERVAL);
-            request.getSession().setAttribute("user", user);
-//            userRepository.updateLoginInfo(user, clientIp);
-            return true;
-        } else {
-            request.getSession().setAttribute("user", null);
-            return false;
-        }
+        request.getSession().setMaxInactiveInterval(SESSION_MAX_INTERVAL);
+        request.getSession().setAttribute("user", user);
+        userRepository.updateLoginInfo(user);
+        return true;
     }
 
     private boolean checkInterfaceRight(HttpServletRequest request, User user, String clientIp) {
-        boolean okUser=true;//判断进出口接口
+        boolean okUser = true;//判断进出口接口
         return okUser;
     }
 
@@ -178,47 +181,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
         return isOk;
     }
 
-    private String getIpAddr(HttpServletRequest request/* ,@RequestHeader MultiValueMap<String,String> headers*/) {
-        String ipAddress = request.getHeader("x-forwarded-for");
-        ipAddress = isNullIP(ipAddress) ? request.getHeader("Proxy-Client-IP") : ipAddress;
-        ipAddress = isNullIP(ipAddress) ? request.getHeader("WL-Proxy-Client-IP") : ipAddress;
-        ipAddress = isNullIP(ipAddress) ? request.getHeader("WL-Proxy-Client-IP") : ipAddress;
-        ipAddress = isNullIP(ipAddress) ? request.getRemoteAddr() : ipAddress;
 
-        if (ipAddress != null && ipAddress.indexOf(".") == -1) {
-            return null;
-
-            //"***.***.***.***".length() = 15
-        } else if (ipAddress != null && ipAddress.length() > 15 && ipAddress.indexOf(",") > 0) {
-
-            //对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
-            String[] temparyip = ipAddress.split(",");
-            for (int i = 0; i < temparyip.length; i++) {
-                if (isIPAddress(temparyip[i])
-                        && temparyip[i] != "127.0.0.1"
-                        && temparyip[i].substring(0, 3) != "10."
-                        && temparyip[i].substring(0, 8) != "192.168."
-                        && temparyip[i].substring(0, 7) != "172.16."
-                        && temparyip[i].substring(0, 8) != "169.254.") {
-                    ipAddress = temparyip[i];
-                }
-            }
-            // ipAddress = ipAddress.substring(0,ipAddress.indexOf(","));
-        }
-        return ipAddress;
-    }
-
-    private boolean isNullIP(String ipAddress) {
-        return ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress);
-    }
-
-    private static boolean isIPAddress(String str1) {
-        if (str1 == null || str1.trim().length() < 7 || str1.trim().length() > 15) {
-            return false;
-        } else {
-            return true;
-        }
-    }
 
     private boolean hasLoginAnotation(Class clazz, Method method) {
 

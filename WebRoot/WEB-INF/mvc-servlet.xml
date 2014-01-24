@@ -21,7 +21,6 @@
         <bean class="net.oilchem.common.UserInterceptor" />
     </mvc:interceptors>
 
-
     <bean id="viewResolver"
           class="org.springframework.web.servlet.view.UrlBasedViewResolver">
         <property name="viewClass"
@@ -33,6 +32,8 @@
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver" 
           />  
     <bean name="flashMapManager" class="org.springframework.web.servlet.support.SessionFlashMapManager"/>
+
+    <bean id="exceptionResolver" class="net.oilchem.common.ExceptionHandler"/>
 
     <!-- exception mapping -->
     <!--<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">-->
