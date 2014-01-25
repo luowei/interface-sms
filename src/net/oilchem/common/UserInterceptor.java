@@ -106,6 +106,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
                 } else if (!dbUser.getAccessToken().equals(accessToken)) {
                     return false;
                 }
+                user.setStopClient(dbUser.getStopClient());
                 user.setPassword(password);
             }
 

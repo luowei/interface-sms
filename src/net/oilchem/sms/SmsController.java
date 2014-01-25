@@ -40,16 +40,9 @@ public class SmsController extends BaseController {
         List<Sms> smsList = smsRepository.list(user);
 
         map.put("messages",smsList);
-        return new JsonRet<Map>();
-    }
-
-    @ResponseBody
-    @RequestMapping("/getConfig")
-    public JsonRet<Map> getConfig(HttpServletRequest request){
-
-        User user = (User)request.getSession().getAttribute("user");
-        List<Group> groups=smsRepository.listGroup(user);
-        return null;
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(map);
+        return ret;
     }
 
     @ResponseBody
@@ -58,15 +51,71 @@ public class SmsController extends BaseController {
         User user = (User)request.getSession().getAttribute("user");
 
         Map map = new HashMap();
-        map.put("ts",new Date().getTime());
+        map.put("ts",String.valueOf(new Date().getTime()));
 
         List<Sms> smsList = smsRepository.getMessages(user);
 
         map.put("messages",smsList);
-        return new JsonRet<Map>();
-
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(map);
+        return ret;
     }
 
+    @ResponseBody
+    @RequestMapping("/getMessageTrial")
+    public JsonRet<Map> getMessageTrial(HttpServletRequest request,Sms sms){
 
+        return null;
+    }
+
+    @ResponseBody
+    @RequestMapping("/getConfig")
+    public JsonRet<Map> getConfig(HttpServletRequest request){
+        User user = (User)request.getSession().getAttribute("user");
+        Map dataMap = new HashMap();
+        Map configMap = new HashMap();
+
+        List<Group> groups=smsRepository.getCategories(user);
+        configMap.put("categories",groups);
+
+        configMap.put("customerServicename",user.getUsername());
+        configMap.put("customerServiceNumber",user.getUsername());
+        configMap.put("pageSizeWhileSearchingLocalSMS","10");
+        configMap.put("latestAppVersion","1.0");
+        configMap.put("appDownload","http://www.oilchem.net/download/android/sms.apk");
+
+        dataMap.put("config",configMap);
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(dataMap);
+        return ret;
+    }
+
+    @ResponseBody
+    @RequestMapping("/getCategories")
+    public JsonRet<Map> getCategories(HttpServletRequest request){
+        User user = (User)request.getSession().getAttribute("user");
+        Map dataMap = new HashMap();
+
+        List<Group> groups=smsRepository.getCategories(user);
+        dataMap.put("categories",groups);
+
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(dataMap);
+        return ret;
+    }
+
+    @ResponseBody
+    @RequestMapping("/changePushStat")
+    public JsonRet<Map> changePushStat(HttpServletRequest request,Group group){
+        User user = (User)request.getSession().getAttribute("user");
+        Map dataMap = new HashMap();
+
+        smsRepository.updateCategories(user,group);
+
+        dataMap.put("categories",group);
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(dataMap);
+        return ret;
+    }
 
 }

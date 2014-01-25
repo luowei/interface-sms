@@ -60,6 +60,7 @@ public class UserRepository extends JdbcDaoSupport {
                                 rs.getTimestamp("User_LastTime"),
                                 rs.getInt("User_LoginTimes")
                         );
+                        user.setStopClient(rs.getInt("user_stopClient"));
                         return user;
                     }
                 }
@@ -101,6 +102,7 @@ public class UserRepository extends JdbcDaoSupport {
                                 rs.getTimestamp("User_LastTime"),
                                 rs.getInt("User_LoginTimes")
                         );
+                        user.setImei(rs.getString("User_IMEI"));
                         return user;
                     }
                 }

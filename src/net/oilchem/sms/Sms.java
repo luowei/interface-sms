@@ -2,10 +2,12 @@ package net.oilchem.sms;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
-import org.codehaus.jackson.annotate.JsonWriteNullProperties;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,19 +16,39 @@ import java.util.Date;
  * Time: 下午5:09
  * To change this template use File | Settings | File Templates.
  */
-@JsonPropertyOrder({"tittle","msg","currentPage","pageSize","totalPage","type","data"})
+@JsonPropertyOrder({"groupId", "ts", "content","tittle" })
 public class Sms implements Serializable {
 
     Integer id;
+    String smsId;
+
     String tittle;
+
     Date time;
-    Long ts;
+    String ts;
+
     String content;
 
-    Integer groupId;
-    String group;
+    Integer gId;
+    String groupId;
+    String groupIds;
+    String groupName;
 
+    public Sms() {
+    }
+
+    public Sms(Integer id, Date time, String content, Integer gId) {
+        this.id = id;
+        this.time = time;
+        this.content = content;
+        this.gId = gId;
+    }
+
+    @JsonIgnore
     public Integer getId() {
+        if (smsId != null && isNumeric(smsId)) {
+            id = Integer.valueOf(smsId);
+        }
         return id;
     }
 
@@ -34,7 +56,22 @@ public class Sms implements Serializable {
         this.id = id;
     }
 
+    @JsonIgnore
+    public String getSmsId() {
+        if (id != null) {
+            smsId = String.valueOf(id);
+        }
+        return smsId;
+    }
+
+    public void setSmsId(String smsId) {
+        this.smsId = smsId;
+    }
+
     public String getTittle() {
+        if(isNotBlank(content) && content.length() >= 10){
+           tittle = content.substring(0,9);
+        }
         return tittle;
     }
 
@@ -51,11 +88,14 @@ public class Sms implements Serializable {
         this.time = time;
     }
 
-    public Long getTs() {
+    public String getTs() {
+        if (time != null) {
+            ts = String.valueOf(time.getTime());
+        }
         return ts;
     }
 
-    public void setTs(Long ts) {
+    public void setTs(String ts) {
         this.ts = ts;
     }
 
@@ -67,21 +107,40 @@ public class Sms implements Serializable {
         this.content = content;
     }
 
-    public Integer getGroupId() {
+    @JsonIgnore
+    public Integer getgId() {
+        return gId;
+    }
+
+    public void setgId(Integer gId) {
+        this.gId = gId;
+    }
+
+    public String getGroupId() {
         return groupId;
     }
 
-    public void setGroupId(Integer groupId) {
+    public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
 
-    @SuppressWarnings("deprecation")
-    @JsonWriteNullProperties(false)
-    public String getGroup() {
-        return group;
+    @JsonIgnore
+    public String getGroupIds() {
+        return groupIds;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public void setGroupIds(String groupIds) {
+        this.groupIds = groupIds;
+    }
+
+    //    @SuppressWarnings("deprecation")
+    //    @JsonWriteNullProperties(false)
+    @JsonIgnore
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }

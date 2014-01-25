@@ -16,6 +16,7 @@ public class User implements Serializable {
     String username;
     String password;
     String accessToken;
+    String Imei;
 
     String ipRight;        //ip权限
     String lastIp;         //上次登录ip
@@ -26,8 +27,12 @@ public class User implements Serializable {
     Date startDate;       //到期起始日
     Date endDate;         //到期结束日
 
+    Integer stopClient;
+
     public User() {
     }
+
+
 
     public User(Integer id, String username, String password, String accessToken,
                 String lastIp, Date lasttime, Integer loginTimes) {
@@ -73,6 +78,14 @@ public class User implements Serializable {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    public String getImei() {
+        return Imei;
+    }
+
+    public void setImei(String imei) {
+        Imei = imei;
     }
 
     public String getIpRight() {
@@ -129,4 +142,11 @@ public class User implements Serializable {
         return this;
     }
 
+    public Integer getStopClient() {
+        return stopClient;
+    }
+
+    public void setStopClient(Integer stopClient) {
+        this.stopClient = stopClient;
+    }
 }

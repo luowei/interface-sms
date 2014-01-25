@@ -38,8 +38,8 @@ public class UserController extends BaseController {
     @ResponseBody
     @RequestMapping("/nologin")
     public String nologin() {
-        return format(FORMAT,"1","",
-                "\"login\":0,\"message\":\"登录失败！\",\"accessToken\":\"\"");
+        return format(FORMAT,"\"1\"","\"\"",
+                "\"login\":\"0\",\"message\":\"登录失败！\",\"accessToken\":\"\"");
     }
 
     @NeedLogin(false)
@@ -58,9 +58,11 @@ public class UserController extends BaseController {
                 return "forward:/user/nologin";
             } else if (isBlank(dbUser.getAccessToken())) {       //第一次登录,更新accessToken
                 user.setUsername(username);
+                user.setStopClient(dbUser.getStopClient());
                 String token = request.getSession().getId();
                 user.setAccessToken(token);
             } else {
+                user.setStopClient(dbUser.getStopClient());
                 user.setAccessToken(dbUser.getAccessToken());
             }
             user.setPassword(password);
@@ -72,8 +74,8 @@ public class UserController extends BaseController {
         request.getSession().setMaxInactiveInterval(SESSION_MAX_INTERVAL);
         request.getSession().setAttribute("user", user);
         userRepository.updateLoginInfo(user);
-        return  format(FORMAT,"1","",
-                "\"login\":1,\"message\":\"登录成功！\",\"accessToken\":\""+user.getAccessToken()+"\"");
+        return  format(FORMAT,"\"1\"","\"\"",
+                "\"login\":\"1\",\"message\":\"登录成功！\",\"accessToken\":\""+user.getAccessToken()+"\"");
     }
 
     @ResponseBody
@@ -82,8 +84,8 @@ public class UserController extends BaseController {
         if (!sessionStatus.isComplete()) {
             sessionStatus.setComplete();
         }
-        return format(FORMAT,"1","",
-                "\"login\":1,\"message\":\"登出成功！\",\"accessToken\":\"\"");
+        return format(FORMAT,"\"1\"","\"\"",
+                "\"login\":\"1\",\"message\":\"登出成功！\",\"accessToken\":\"\"");
     }
 
     @NeedLogin(false)
