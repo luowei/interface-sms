@@ -1,5 +1,7 @@
 package net.oilchem.common.bean;
 
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
+
 import java.io.Serializable;
 
 /**
@@ -9,6 +11,7 @@ import java.io.Serializable;
  * Time: 下午4:37
  * To change this template use File | Settings | File Templates.
  */
+@JsonPropertyOrder({"stat","error","data"})
 public class JsonRet<T> implements Serializable {
 
     Integer stat;

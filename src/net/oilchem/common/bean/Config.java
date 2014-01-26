@@ -1,16 +1,15 @@
 package net.oilchem.common.bean;
 
-import com.jolbox.bonecp.BoneCPDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import java.io.*;
-import java.util.*;
-
-import static org.springframework.web.context.ContextLoader.getCurrentWebApplicationContext;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,82 +20,76 @@ import static org.springframework.web.context.ContextLoader.getCurrentWebApplica
  */
 public class Config implements ServletContextListener {
 
-    public static JdbcTemplate jdbcTemplate;
 
-    public static Map<String,Long> loginCache;
-    public static Integer PAGE_SIZE = 20;
-    public static Integer PAGEBAR_SIZE = 10;
 
     public static String properties_fileName = getConfigPath();
-    public static Integer SESSION_MAX_INTERVAL = 300;
-//    public static String JSON_MSG = "{\"code\":%d,\"msg\":\"%s\"}";
-    public static String JSON_MSG = null;
-    public static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    public static Integer FAILD_RET_CODE = 0;
-    public static String NODATA_RET_MSG = " no data !";
-    public static Integer DEFAULT_PAGESIZE = 5000;
-    public static Integer DEFAULT_CURRENT = 1;
-    public static long LOGIN_IDLE;
+    public static Integer session_max_interval = 300;
+    public static String json_format =  "{\"stat\":\"%s\",\"error\":\"%s\",\"data\":{ %s } }";
+    public static String latestAppVersion = "1.0";
+    public static String customerServicename = "隆众客服";
+    public static String customerServiceNumber = "0533-2591688";
+    public static String registrationNumber = "400-658-1688";
+    public static Integer pageSizeWhileSearchingLocalSMS = 10;
+    public static String appDownload = "http://www.oilchem.net/download/android/sms.apk";
+    public static Integer getPushTimeInterval = 30;
 
-//    public static String UP = "up";
-//    public static String DOWN = "down";
-//
-//    public static Integer PAGE_SIZE = 20;
-//    public static Integer PAGEBAR_SIZE = 10;
+    public static String login_success = "登录成功";
+    public static String login_faild = "登录失败";
+    public static String authentication_faild = "验证失败";
+    public static String login_stop = "账号已停用";
 
-
-    public static JdbcTemplate getJdbcTemplate(){
-        if(jdbcTemplate==null){
-            jdbcTemplate = new JdbcTemplate(BoneCPDataSource.class.cast(getCurrentWebApplicationContext().getBean("interfaceDataSource")));
-        }
-        return jdbcTemplate;
-    }
+    public static Long inerCache_expire = 24 * 3600 * 1000L;
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
-        loginCache = new HashMap<String, Long>();
 
         Map<String, String> map = PropertiesUtil.getAllProperty();
         if (map == null || map.isEmpty()) {
             return;
         }
 
-        Integer session_max_interval = Integer.valueOf(map.get("SESSION_MAX_INTERVAL"));
-        SESSION_MAX_INTERVAL = (session_max_interval != null && session_max_interval.intValue() >= 0) ? session_max_interval : SESSION_MAX_INTERVAL;
+        Integer _session_max_interval = Integer.valueOf(map.get("session_max_interval"));
+        session_max_interval = (_session_max_interval != null && _session_max_interval >= 0) ? _session_max_interval : session_max_interval;
 
-        String json_msg = map.get("JSON_MSG");
-        JSON_MSG = (json_msg != null && json_msg !="")?json_msg:JSON_MSG;
+        String _json_format = map.get("json_format");
+        json_format = (_json_format != null && _json_format !="")?_json_format:json_format;
 
-        String date_format = map.get("DATE_FORMAT");
-        DATE_FORMAT = (date_format != null && date_format !="")?date_format:DATE_FORMAT;
+        String _latestAppVersion = map.get("latestAppVersion");
+        latestAppVersion = (_latestAppVersion != null && _latestAppVersion !="")?_latestAppVersion:latestAppVersion;
 
-        Integer faild_ret_code = Integer.valueOf(map.get("FAILD_RET_CODE"));
-        FAILD_RET_CODE = (faild_ret_code != null) ? faild_ret_code : FAILD_RET_CODE;
+        String _customerServicename = map.get("customerServicename");
+        customerServicename = (_customerServicename != null && _customerServicename !="")?_customerServicename:customerServicename;
 
-        String nodata_ret_msg = map.get("NODATA_RET_MSG");
-        NODATA_RET_MSG = (nodata_ret_msg != null && nodata_ret_msg !="")?nodata_ret_msg:NODATA_RET_MSG;
+        String _customerServiceNumber = map.get("customerServiceNumber");
+        customerServiceNumber = (_customerServiceNumber != null && _customerServiceNumber !="")?_customerServiceNumber:customerServiceNumber;
 
-        Integer default_pagesize = Integer.valueOf(map.get("DEFAULT_PAGESIZE"));
-        DEFAULT_PAGESIZE = (default_pagesize != null) ? default_pagesize : DEFAULT_PAGESIZE;
+        String _registrationNumber = map.get("registrationNumber");
+        registrationNumber = (_registrationNumber != null && _registrationNumber !="")?_registrationNumber:registrationNumber;
 
-        Integer default_current = Integer.valueOf(map.get("DEFAULT_CURRENT"));
-        DEFAULT_CURRENT = (default_current != null) ? default_current : DEFAULT_CURRENT;
+        Integer _pageSizeWhileSearchingLocalSMS = Integer.valueOf(map.get("pageSizeWhileSearchingLocalSMS"));
+        pageSizeWhileSearchingLocalSMS = (_pageSizeWhileSearchingLocalSMS != null && _pageSizeWhileSearchingLocalSMS >= 0) ? _pageSizeWhileSearchingLocalSMS : pageSizeWhileSearchingLocalSMS;
 
-        Integer login_idle = Integer.valueOf(map.get("LOGIN_IDLE"));
-        LOGIN_IDLE = (login_idle != null) ? login_idle : LOGIN_IDLE;
+        String _appDownload = map.get("appDownload");
+        appDownload = (_appDownload != null && _appDownload !="")?_appDownload:appDownload;
 
-//        String up = map.get("UP");
-//        UP = (up != null && up != "") ? up : UP;
-//
-//        String down = map.get("DOWN");
-//        DOWN = (down != null && down != "") ? down : DOWN;
-//
-//        Integer page_size = Integer.valueOf(map.get("PAGE_SIZE"));
-//        PAGE_SIZE = (page_size != null && page_size.intValue() >= 0) ? page_size : PAGE_SIZE;
-//
-//        Integer pagebar_size = Integer.valueOf(map.get("PAGEBAR_SIZE"));
-//        PAGEBAR_SIZE = (pagebar_size != null && pagebar_size.intValue() >= 0) ? pagebar_size : PAGEBAR_SIZE;
+        Integer _getPushTimeInterval = Integer.valueOf(map.get("getPushTimeInterval"));
+        getPushTimeInterval = (_getPushTimeInterval != null && _getPushTimeInterval >= 0) ? _getPushTimeInterval : getPushTimeInterval;
+
+        String _login_success = map.get("login_success");
+        login_success = (_login_success != null && _login_success !="")?_login_success:login_success;
+
+        String _login_faild = map.get("login_faild");
+        login_faild = (_login_faild != null && _login_faild !="")?_login_faild:login_faild;
+
+        String _authentication_faild = map.get("authentication_faild");
+        authentication_faild = (_authentication_faild != null && _authentication_faild !="")?_authentication_faild:authentication_faild;
+
+        String _login_stop = map.get("login_stop");
+        login_stop = (_login_stop != null && _login_stop !="")?_login_stop:login_stop;
+
+        Long _inerCache_expire = Long.valueOf(map.get("inerCache_expire"));
+        inerCache_expire = (_inerCache_expire != null && _inerCache_expire >= 0) ? _inerCache_expire : inerCache_expire;
     }
 
 
@@ -136,7 +129,8 @@ public class Config implements ServletContextListener {
                     props = new Properties();
                 }
                 fis = new FileInputStream(fileName);
-                props.load(fis);
+                InputStreamReader is = new InputStreamReader(fis,"UTF-8");
+                props.load(is);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             } finally {
@@ -169,7 +163,7 @@ public class Config implements ServletContextListener {
             while (enu.hasMoreElements()) {
                 String key = (String) enu.nextElement();
                 String value = props.getProperty(key);
-                map.put(key, value);
+                map.put(key, (value!=null?value.trim():"") );
             }
             return map;
         }

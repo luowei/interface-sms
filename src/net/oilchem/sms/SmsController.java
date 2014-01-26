@@ -2,6 +2,7 @@ package net.oilchem.sms;
 
 import net.oilchem.common.BaseController;
 import net.oilchem.common.bean.JsonRet;
+import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,10 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,6 +19,7 @@ import java.util.Map;
  * Time: 上午8:58
  * To change this template use File | Settings | File Templates.
  */
+@NeedLogin
 @Controller
 @RequestMapping("/sms")
 public class SmsController extends BaseController {
@@ -30,14 +29,14 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getPushSMS")
-    public JsonRet<Map> getPushSMS(HttpServletRequest request){
+    public JsonRet<Map> getPushSMS(HttpServletRequest request,Sms sms){
 
         User user = (User)request.getSession().getAttribute("user");
 
         Map map = new HashMap();
         map.put("ts",new Date().getTime());
 
-        List<Sms> smsList = smsRepository.list(user);
+        List<Sms> smsList = smsRepository.getPushSMS(user, sms);
 
         map.put("messages",smsList);
         JsonRet<Map> ret = new JsonRet<Map>();
@@ -53,7 +52,7 @@ public class SmsController extends BaseController {
         Map map = new HashMap();
         map.put("ts",String.valueOf(new Date().getTime()));
 
-        List<Sms> smsList = smsRepository.getMessages(user);
+        List<Sms> smsList = smsRepository.getMessages(user, sms);
 
         map.put("messages",smsList);
         JsonRet<Map> ret = new JsonRet<Map>();
@@ -61,11 +60,20 @@ public class SmsController extends BaseController {
         return ret;
     }
 
+    @NeedLogin(false)
     @ResponseBody
     @RequestMapping("/getMessageTrial")
-    public JsonRet<Map> getMessageTrial(HttpServletRequest request,Sms sms){
+    public JsonRet<Map> getMessageTrial(String key,String ts){
 
-        return null;
+        Map map = new HashMap();
+        map.put("ts",String.valueOf(new Date().getTime()));
+
+        List<Sms> smsList = smsRepository.getMessageTrial(key,ts);
+
+        map.put("messages",smsList);
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(map);
+        return ret;
     }
 
     @ResponseBody

@@ -2,6 +2,7 @@ package net.oilchem.user;
 
 import net.oilchem.common.BaseController;
 import net.oilchem.common.bean.NeedLogin;
+import net.oilchem.common.utils.EHCacheTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,10 +10,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Random;
 
 import static java.lang.String.format;
-import static net.oilchem.common.bean.Config.SESSION_MAX_INTERVAL;
+import static net.oilchem.common.bean.Config.*;
 import static net.oilchem.common.utils.Md5Util.generatePassword;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -25,7 +34,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * To change this template use File | Settings | File Templates.
  */
 @Controller
-@NeedLogin
+@NeedLogin(false)
 @SessionAttributes("user")
 @RequestMapping("/user")
 public class UserController extends BaseController {
@@ -34,67 +43,209 @@ public class UserController extends BaseController {
     @Autowired
     UserRepository userRepository;
 
-    @NeedLogin(false)
     @ResponseBody
-    @RequestMapping("/nologin")
+    @RequestMapping("/loginFaild")
     public String nologin() {
-        return format(FORMAT,"\"1\"","\"\"",
-                "\"login\":\"0\",\"message\":\"登录失败！\",\"accessToken\":\"\"");
+        return format(json_format, "1", "",
+                "\"login\":\"0\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
     }
 
-    @NeedLogin(false)
-    @RequestMapping("/login")
+    @ResponseBody
+    @RequestMapping("/authFaild")
+    public String authFaild() {
+        return format(json_format, "1", "",
+                "\"login\":\"0\",\"message\":\"" + authentication_faild + "\",\"accessToken\":\"\"");
+    }
+
+
+
+    @ResponseBody
+    @RequestMapping("/noData")
+    public String noData() {
+        return format(json_format, "1", "","");
+    }
+
+    @ResponseBody
+    @RequestMapping("/userLogin")
     public String login(HttpServletRequest request, User user) {
 
         String username = user.getUsername();
         String password = (user.getPassword() != null ? generatePassword(user.getPassword()) : user.getPassword());
         user.setPassword(password);
+        String imei = user.getImei();
 
-        //2.第一次登录：根据用户名、密码到数据库找
-        if (isNotBlank(username) && isNotBlank(password)) {
+        //第一次登录：根据用户名、密码到数据库找
+        if (isNotBlank(username) && isNotBlank(password) && isNotBlank(imei)) {
             User dbUser = userRepository.findByUsernameAndPassword(username, password);
 
+            //找不到此用户
             if (dbUser == null) {
-                return "forward:/user/nologin";
-            } else if (isBlank(dbUser.getAccessToken())) {       //第一次登录,更新accessToken
-                user.setUsername(username);
-                user.setStopClient(dbUser.getStopClient());
+                return format(json_format, "1", "",
+                        "\"login\":\"0\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
+            }
+
+            if(imei.equals(dbUser.getImei()) || isBlank(dbUser.getImei())){        //imei相同
                 String token = request.getSession().getId();
                 user.setAccessToken(token);
-            } else {
-                user.setStopClient(dbUser.getStopClient());
-                user.setAccessToken(dbUser.getAccessToken());
+                user.setImei(dbUser.getImei());
+            }else {                                   //imei不相同
+                //accessToken为空,更新accessToken
+                if ( isBlank(dbUser.getAccessToken())) {
+                    String token = request.getSession().getId();
+                    user.setAccessToken(token);
+                    user.setImei(imei);
+                } else {
+                    return format(json_format, "1", "",
+                            "\"login\":\"0\",\"message\":\"用户已在其它设备登录，请注销后再登录\",\"accessToken\":\"\"");
+                }
             }
-            user.setPassword(password);
+
+            user.setStopClient(dbUser.getStopClient());
+            user.setPassword(password);              //密码设置为加密后的密码
+            user.setLastIp(getIpAddr(request));      //获得客户端ip
+
+            EHCacheTool.<User>setValue("user", user);
+            userRepository.updateLoginInfo(user);
+            return format(json_format, "1", "",
+                    "\"login\":\"1\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
         }
+        return format(json_format, "1", "",
+                "\"login\":\"0\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
+    }
 
-        //获得客户端ip
-        user.setLastIp(getIpAddr(request));
 
-        request.getSession().setMaxInactiveInterval(SESSION_MAX_INTERVAL);
-        request.getSession().setAttribute("user", user);
-        userRepository.updateLoginInfo(user);
-        return  format(FORMAT,"\"1\"","\"\"",
-                "\"login\":\"1\",\"message\":\"登录成功！\",\"accessToken\":\""+user.getAccessToken()+"\"");
+    @RequestMapping("/userLogout")
+    public String logout(HttpServletRequest request, SessionStatus sessionStatus,String accessToken) {
+        Object userObj = request.getSession().getAttribute("user");
+        User user = null;
+        if (userObj != null) {
+            user = (userObj!=null?(User)userObj:userRepository.findByAccessToken(accessToken));
+        }
+        if (!sessionStatus.isComplete() && user!=null) {
+            userRepository.cleanAccessToken(user);
+            sessionStatus.setComplete();
+        }
+        return format(json_format, "1", "",
+                "\"logout\":\"1\"");
     }
 
     @ResponseBody
-    @RequestMapping("/logout")
-    public String logout(SessionStatus sessionStatus) {
-        if (!sessionStatus.isComplete()) {
-            sessionStatus.setComplete();
+    @RequestMapping("/userRegister")
+    public String register(HttpServletRequest request, String cell, String authCode) {
+
+        String code = (String) request.getSession().getAttribute("authCode");
+        if (isNotBlank(cell)) {
+            return format(json_format, "1", "",
+                    "\"login\":\"0\",\"message\":\"手机号码为空，注册失败\"");
         }
-        return format(FORMAT,"\"1\"","\"\"",
-                "\"login\":\"1\",\"message\":\"登出成功！\",\"accessToken\":\"\"");
+        if (isNotBlank(authCode) && authCode.equals(code)) {
+            String clientIp = getIpAddr(request);
+            User user = new User(cell, clientIp);
+            userRepository.register(user);
+            return format(json_format, "1", "",
+                    "\"login\":\"1\",\"message\":\"已成功提交，请等待人工联系\"");
+        } else {
+            return format(json_format, "1", "",
+                    "\"login\":\"1\",\"message\":\"验证码有误，注册失败\"");
+        }
     }
 
-    @NeedLogin(false)
-    @RequestMapping("/register")
-    public String register(HttpServletRequest request, User user) {
+    @RequestMapping("/authCode")
+    public void authCode(HttpServletRequest req, HttpServletResponse resp, Integer height, Integer width)
+            throws IOException {
 
-        return null;
+        width = (width == null || width == 0 ? 90 : width);//定义图片的width
+        height = (height == null || height == 0 ? 20 : height);//定义图片的height
+        int codeCount = 4;//定义图片上显示验证码的个数
+        int xx = 15;
+        int fontHeight = 18;
+        int codeY = 16;
+        char[] codeSequence = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+                'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+
+        // 定义图像buffer
+        BufferedImage buffImg = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_RGB);
+//      Graphics2D gd = buffImg.createGraphics();
+        //Graphics2D gd = (Graphics2D) buffImg.getGraphics();
+        Graphics gd = buffImg.getGraphics();
+        // 创建一个随机数生成器类
+        Random random = new Random();
+        // 将图像填充为白色
+        gd.setColor(Color.WHITE);
+        gd.fillRect(0, 0, width, height);
+
+        // 创建字体，字体的大小应该根据图片的高度来定。
+        Font font = new Font("Fixedsys", Font.BOLD, fontHeight);
+        // 设置字体。
+        gd.setFont(font);
+
+        // 画边框。
+        gd.setColor(Color.BLACK);
+        gd.drawRect(0, 0, width - 1, height - 1);
+
+        // 随机产生40条干扰线，使图象中的认证码不易被其它程序探测到。
+        gd.setColor(Color.BLACK);
+        for (int i = 0; i < 40; i++) {
+            int x = random.nextInt(width);
+            int y = random.nextInt(height);
+            int xl = random.nextInt(12);
+            int yl = random.nextInt(12);
+            gd.drawLine(x, y, x + xl, y + yl);
+        }
+
+        // randomCode用于保存随机产生的验证码，以便用户登录后进行验证。
+        StringBuffer randomCode = new StringBuffer();
+        int red = 0, green = 0, blue = 0;
+
+        // 随机产生codeCount数字的验证码。
+        for (int i = 0; i < codeCount; i++) {
+            // 得到随机产生的验证码数字。
+            String code = String.valueOf(codeSequence[random.nextInt(36)]);
+            // 产生随机的颜色分量来构造颜色值，这样输出的每位数字的颜色值都将不同。
+            red = random.nextInt(255);
+            green = random.nextInt(255);
+            blue = random.nextInt(255);
+
+            // 用随机产生的颜色将验证码绘制到图像中。
+            gd.setColor(new Color(red, green, blue));
+            gd.drawString(code, (i + 1) * xx, codeY);
+
+            // 将产生的四个随机数组合在一起。
+            randomCode.append(code);
+        }
+        // 将四位数字的验证码保存到Session中。
+        HttpSession session = req.getSession();
+        System.out.print(randomCode);
+        session.setAttribute("authCode", randomCode.toString());
+
+        // 禁止图像缓存。
+        resp.setHeader("Pragma", "no-cache");
+        resp.setHeader("Cache-Control", "no-cache");
+        resp.setDateHeader("Expires", 0);
+
+        resp.setContentType("image/jpeg");
+
+        // 将图像输出到Servlet输出流中。
+        ServletOutputStream sos = resp.getOutputStream();
+        ImageIO.write(buffImg, "jpeg", sos);
+        sos.close();
     }
 
+
+    @ResponseBody
+    @RequestMapping("/updateApp")
+    public String updateApp(HttpServletRequest request, String version) {
+        int update = 0;
+        String downloadUrl = "";
+        if (isNotBlank(version) && !version.equals(latestAppVersion)) {
+            update = 1;
+            downloadUrl = appDownload;
+        }
+        return format(json_format, "1", "",
+                "\"update\":\"" + update + "\",\"downloadUrl\":\"" + downloadUrl + "\"");
+    }
 
 
 }

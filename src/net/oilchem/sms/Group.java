@@ -1,5 +1,6 @@
 package net.oilchem.sms;
 
+import net.oilchem.common.bean.InerCache;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
@@ -60,6 +61,10 @@ public class Group implements Serializable {
     }
 
     public String getName() {
+        if (groupId != null) {
+            Group group = InerCache.getUserMap().get(groupId);
+            name = group == null ? "" : group.getName();
+        }
         return name;
     }
 

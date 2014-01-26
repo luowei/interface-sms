@@ -11,8 +11,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class BaseController {
 
-    public static String FORMAT =  "{\"stat\":%s,\"error\":\"%s\",\"data\":{ %s } }";
-
     Integer getTotalPage(Integer pageSize,Integer totalCount){
         if(pageSize!=null && !pageSize.equals(0)){
             if(totalCount%pageSize==0){

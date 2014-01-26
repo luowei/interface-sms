@@ -32,7 +32,10 @@ public class User implements Serializable {
     public User() {
     }
 
-
+    public User(String username, String lastIp) {
+        this.username = username;
+        this.lastIp = lastIp;
+    }
 
     public User(Integer id, String username, String password, String accessToken,
                 String lastIp, Date lasttime, Integer loginTimes) {
