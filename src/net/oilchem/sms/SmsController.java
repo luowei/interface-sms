@@ -3,6 +3,7 @@ package net.oilchem.sms;
 import net.oilchem.common.BaseController;
 import net.oilchem.common.bean.JsonRet;
 import net.oilchem.common.bean.NeedLogin;
+import net.oilchem.common.utils.EHCacheUtil;
 import net.oilchem.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,7 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static net.oilchem.common.bean.Config.*;
+import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,12 +37,12 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getPushSMS")
-    public JsonRet<Map> getPushSMS(HttpServletRequest request,Sms sms){
+    public JsonRet<Map> getPushSMS(HttpServletRequest request,Sms sms,String accessToken){
 
-        User user = (User)request.getSession().getAttribute("user");
+        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
 
         Map map = new HashMap();
-        map.put("ts",new Date().getTime());
+        map.put("ts",String.valueOf(new Date().getTime()));
 
         List<Sms> smsList = smsRepository.getPushSMS(user, sms);
 
@@ -46,8 +54,8 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getMessages")
-    public JsonRet<Map> getMessages(HttpServletRequest request,Sms sms){
-        User user = (User)request.getSession().getAttribute("user");
+    public JsonRet<Map> getMessages(HttpServletRequest request,Sms sms,String accessToken){
+        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
 
         Map map = new HashMap();
         map.put("ts",String.valueOf(new Date().getTime()));
@@ -78,19 +86,19 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getConfig")
-    public JsonRet<Map> getConfig(HttpServletRequest request){
-        User user = (User)request.getSession().getAttribute("user");
+    public JsonRet<Map> getConfig(String accessToken) throws IOException {
+        User user = EHCacheUtil.<User>getValue("userCache",accessToken);
         Map dataMap = new HashMap();
         Map configMap = new HashMap();
 
         List<Group> groups=smsRepository.getCategories(user);
-        configMap.put("categories",groups);
 
-        configMap.put("customerServicename",user.getUsername());
-        configMap.put("customerServiceNumber",user.getUsername());
-        configMap.put("pageSizeWhileSearchingLocalSMS","10");
-        configMap.put("latestAppVersion","1.0");
-        configMap.put("appDownload","http://www.oilchem.net/download/android/sms.apk");
+        configMap.put("categories",groups);
+        configMap.put("customerServicename",customerServicename);
+        configMap.put("customerServiceNumber",customerServiceNumber);
+        configMap.put("pageSizeWhileSearchingLocalSMS", String.valueOf(pageSizeWhileSearchingLocalSMS));
+        configMap.put("latestAppVersion", latestAppVersion);
+        configMap.put("appDownload",appDownload);
 
         dataMap.put("config",configMap);
         JsonRet<Map> ret = new JsonRet<Map>();
@@ -100,8 +108,8 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getCategories")
-    public JsonRet<Map> getCategories(HttpServletRequest request){
-        User user = (User)request.getSession().getAttribute("user");
+    public JsonRet<Map> getCategories(String accessToken){
+        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
         Map dataMap = new HashMap();
 
         List<Group> groups=smsRepository.getCategories(user);
@@ -114,11 +122,12 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/changePushStat")
-    public JsonRet<Map> changePushStat(HttpServletRequest request,Group group){
-        User user = (User)request.getSession().getAttribute("user");
+    public JsonRet<Map> changePushStat(String accessToken,Group group){
+        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
         Map dataMap = new HashMap();
 
         smsRepository.updateCategories(user,group);
+        group.setId(isNumeric(group.getGroupId())?Integer.valueOf(group.getGroupId()):null);
 
         dataMap.put("categories",group);
         JsonRet<Map> ret = new JsonRet<Map>();

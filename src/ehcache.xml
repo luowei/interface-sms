@@ -46,7 +46,6 @@
     -->
 
     <defaultCache
-            name="defaut"
             maxElementsInMemory="1000000"
             eternal="false"
             timeToIdleSeconds="3600"
@@ -55,7 +54,6 @@
             diskPersistent="false"
             diskExpiryThreadIntervalSeconds="120"
             />
-
 
 </ehcache>
 

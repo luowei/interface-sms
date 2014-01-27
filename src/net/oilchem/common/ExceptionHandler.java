@@ -21,8 +21,8 @@ public class ExceptionHandler implements HandlerExceptionResolver {
         e.printStackTrace();
 
         ModelAndView view = new ModelAndView(new MappingJacksonJsonView());
-        view.addObject("stat",0);
-        view.addObject("error",e.getMessage());
+        view.addObject("stat","0");
+        view.addObject("error",e.getMessage()==null?"发生异常":e.getMessage());
         view.addObject("data",new HashMap());
         return view;
 //        try {

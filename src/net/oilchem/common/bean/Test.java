@@ -1,10 +1,9 @@
 package net.oilchem.common.bean;
 
-import org.codehaus.jackson.map.ObjectMapper;
-
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
+
+import static net.oilchem.common.utils.Md5Util.generatePassword;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,13 +16,17 @@ public class Test {
 
     public static void main(String[] args) throws IOException {
 
-        Map map = new HashMap();
+//        Map map = new HashMap();
+//
+//        map.put(1,"aaaaaa");
+//        map.put(2,"bbbbb");
+//
+//        ObjectMapper om = new ObjectMapper();
+//        System.out.println(om.writeValueAsString(map));
 
-        map.put(1,"aaaaaa");
-        map.put(2,"bbbbb");
+        System.out.println(generatePassword("13233302958"));
 
-        ObjectMapper om = new ObjectMapper();
-        System.out.println(om.writeValueAsString(map));
+        System.out.println("============:"+ UUID.randomUUID().toString().replace("-",""));
 
     }
 

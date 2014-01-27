@@ -14,15 +14,15 @@ import java.io.Serializable;
 @JsonPropertyOrder({"stat","error","data"})
 public class JsonRet<T> implements Serializable {
 
-    Integer stat;
-    String error;
+    String stat="1";
+    String error="";
     T data;
 
-    public Integer getStat() {
+    public String getStat() {
         return stat;
     }
 
-    public void setStat(Integer stat) {
+    public void setStat(String stat) {
         this.stat = stat;
     }
 

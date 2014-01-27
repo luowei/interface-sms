@@ -17,7 +17,7 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
  * Time: 下午5:09
  * To change this template use File | Settings | File Templates.
  */
-@JsonPropertyOrder({"groupId", "ts", "content","tittle" })
+@JsonPropertyOrder({"groupId", "ts","tittle", "content" })
 public class Sms implements Serializable {
 
     Integer id;
@@ -62,7 +62,7 @@ public class Sms implements Serializable {
         if (id != null) {
             smsId = String.valueOf(id);
         }
-        return smsId;
+        return smsId==null?"":smsId;
     }
 
     public void setSmsId(String smsId) {
@@ -73,7 +73,7 @@ public class Sms implements Serializable {
         if(isNotBlank(content) && content.length() >= 10){
            tittle = content.substring(0,9);
         }
-        return tittle;
+        return tittle==null?"":tittle;
     }
 
     public void setTittle(String tittle) {
@@ -96,7 +96,7 @@ public class Sms implements Serializable {
         if (time != null) {
             ts = String.valueOf(time.getTime());
         }
-        return ts;
+        return ts==null?"":ts;
     }
 
     public void setTs(String ts) {
@@ -124,7 +124,7 @@ public class Sms implements Serializable {
         if(gId!=null && !gId.equals(0)){
             groupId = String.valueOf(gId);
         }
-        return groupId;
+        return groupId==null?"":groupId;
     }
 
     public void setGroupId(String groupId) {
@@ -146,10 +146,10 @@ public class Sms implements Serializable {
 //    @JsonProperty("groupName")
     public String getGroupName() {
         if (groupId != null) {
-            Group group = InerCache.getUserMap().get(groupId);
+            Group group = InerCache.getGroupMap().get(groupId);
             groupName = group == null ? "" : group.getName();
         }
-        return groupName;
+        return groupName==null?"":groupName;
     }
 
     public void setGroupName(String groupName) {

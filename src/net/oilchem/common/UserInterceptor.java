@@ -1,7 +1,7 @@
 package net.oilchem.common;
 
 import net.oilchem.common.bean.NeedLogin;
-import net.oilchem.common.utils.EHCacheTool;
+import net.oilchem.common.utils.EHCacheUtil;
 import net.oilchem.user.User;
 import net.oilchem.user.UserRepository;
 import org.springframework.web.method.HandlerMethod;
@@ -13,8 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import static net.oilchem.common.BaseController.getIpAddr;
-import static net.oilchem.common.bean.Config.session_max_interval;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -48,77 +46,38 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
             String accessToken = request.getAttribute("accessToken") == null ? null : String.valueOf(request.getAttribute("accessToken"));
             accessToken = (accessToken == null ? request.getParameter("accessToken") : accessToken);
             if(isBlank(accessToken)){
-                request.getRequestDispatcher("/user/authFaild").forward(request, response);
+                request.getRequestDispatcher("/user/authFaild.do").forward(request, response);
+                return false;
             }
 
             //首从session里取用户信息
-            User user = EHCacheTool.<User>getValue("user");
+            User user = EHCacheUtil.<User>getValue("userCache", accessToken);
 
             //首先根据令牌到数据库找
             if (user==null) {
                 user = userRepository.findByAccessToken(accessToken);
                 if (user == null) {
-                    request.getRequestDispatcher("/user/authFaild").forward(request, response);
+                    request.getRequestDispatcher("/user/authFaild.do").forward(request, response);
+                    return false;
                 }
             }
 
             if(user.getStopClient()!=null && user.getStopClient().intValue()==1 ){
-                request.getRequestDispatcher("/user/noData").forward(request, response);
+                request.getRequestDispatcher("/user/noData.do").forward(request, response);
+                return false;
             }
 
             if (isBlank(user.getAccessToken()) ||
                     !user.getAccessToken().equals(accessToken)) {
-                request.getRequestDispatcher("/user/authFaild").forward(request, response);
+                request.getRequestDispatcher("/user/authFaild.do").forward(request, response);
+                return false;
             }
 
-            EHCacheTool.setValue("user", user);
+            EHCacheUtil.setValue("userCache", user.getAccessToken(), user);
 //            userRepository.updateLoginInfo(user);
             return true;
         }
 
-    }
-
-    /**
-     * 检查用户登录
-     *
-     * @param request
-     * @return
-     */
-    private boolean checkUserLogin(HttpServletRequest request) {
-
-        User user = null;
-
-        //首从session里取用户信息
-        Object userObj = request.getSession().getAttribute("user");
-
-        String accessToken = request.getAttribute("accessToken") == null ? null : String.valueOf(request.getAttribute("accessToken"));
-        accessToken = (accessToken == null ? request.getParameter("accessToken") : accessToken);
-        if(isBlank(accessToken)){
-            return false;
-        }
-
-        //首先根据令牌到数据库找
-        if (userObj==null) {
-            user = userRepository.findByAccessToken(accessToken);
-            if (user == null) {
-                return false;
-            }
-        }else {
-            user = (User)userObj;
-        }
-
-        if (isBlank(user.getAccessToken()) ||  user.getStopClient()==1 ||
-                !user.getAccessToken().equals(accessToken)) {
-            return false;
-        }
-
-        //获得客户端ip
-        user.setLastIp(getIpAddr(request));
-
-        request.getSession().setMaxInactiveInterval(session_max_interval);
-        request.getSession().setAttribute("user", user);
-        userRepository.updateLoginInfo(user);
-        return true;
     }
 
     private boolean hasLoginAnotation(Class clazz, Method method) {

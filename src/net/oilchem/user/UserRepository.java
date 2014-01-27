@@ -79,7 +79,7 @@ public class UserRepository extends JdbcDaoSupport {
 
     public int updateLoginInfo(User user) {
         String sql = " update LZ_SMSUserMobile set User_accessToken= '" + user.getAccessToken() + "' , User_LastIP='" + user.getLastIp() +
-                "',User_IMEI='"+user.getImei()+"' , User_LastTime==GETDATE(),User_LoginTimes=User_LoginTimes+1 " +
+                "',User_IMEI='"+(user.getImei()==null?"":user.getImei())+"' , User_LastTime=GETDATE(),User_LoginTimes=User_LoginTimes+1 " +
                 " where user_mobile='" + user.getUsername() + "' and User_PWD='" + user.getPassword() + "' ";
         return getJdbcTemplate().update(sql);
     }
@@ -109,6 +109,7 @@ public class UserRepository extends JdbcDaoSupport {
                                 rs.getInt("User_LoginTimes")
                         );
                         user.setImei(rs.getString("User_IMEI"));
+                        user.setStopClient(rs.getInt("user_stopClient"));
                         return user;
                     }
                 }
@@ -128,5 +129,11 @@ public class UserRepository extends JdbcDaoSupport {
     public int cleanAccessToken(User user) {
         String sql = " update LZ_SMSUserMobile set User_accessToken='' where user_mobile='"+user.getUsername()+"' ";
         return getJdbcTemplate().update(sql);
+    }
+
+    public boolean exsitUser(User user) {
+       String sql = " select count(*) from LZ_SMSUSerMobileReg where user_mobile='"+user.getUsername()+"' ";
+        String mobileSql = " select count(*) from LZ_SMSUserMobile where user_mobile='"+user.getUsername()+"' ";
+        return getJdbcTemplate().queryForInt(sql) > 0 || getJdbcTemplate().queryForInt(mobileSql) > 0;
     }
 }

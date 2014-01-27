@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>APIs</title>
+    <script type="text/javascript" src="scripts/shCore.js"></script>
+    <script type="text/javascript" src="scripts/shBrushJScript.js"></script>
+    <link type="text/css" rel="stylesheet" href="styles/shCoreFadeToGrey.css"/>
+    <style>
+            /*CSS Reset*/
+        html {
+            color: #000;
+            background: #CCC;
+            overflow-y: scroll;
+        }
+
+        body {
+            font-family: consolas, Verdana, Microsoft YaHei;
+            font-size: 12px;
+        }
+
+        body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h4, h6, pre, code, form, fieldset, legend, input, textarea, p, blockquote, th, td {
+            margin: 0;
+            padding: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        ol, ul {
+            list-style: none
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .cf {
+            zoom: 1;
+        }
+
+        .cf:after {
+            content: '.';
+            display: block;
+            visibility: hidden;
+            clear: both;
+            height: 0px;
+        }
+
+            /*My CSS Style*/
+        a {
+            color: #069;
+        }
+
+        .nav li {
+            float: left;
+            padding: 1em;
+        }
+
+        .apiBlock {
+            margin: 10px 0 30px 1em;
+        }
+
+        h3 {
+            background: #eee;
+            padding: 0.2em 1em;
+            color: #333;
+        }
+
+        h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .request .type {
+            background: #069;
+            color: #fff;
+            padding: 2px 5px;
+            margin-right: 20px;
+        }
+
+        .changeLog {
+            color: #999;
+            background: #fff;
+            border: 1px dashed #ccc;
+            z-index: 11;
+            position: absolute;
+            top: 80px;
+            right: 0;
+            width: 380px;
+            padding: 15px;
+        }
+
+        .changeLog li.date {
+            color: #333;
+        }
+
+        .changeLog li {
+            line-height: 1.5;
+        }
+
+        .urls a {
+            display: block;
+        }
+
+        .urls a:hover {
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="changeLog">
+    <ul>
+        <li class="date">2014/1/25 19:49</li>
+        <li>涉及到短讯内容和短讯类别的地方都增加了新返回字段groupId</li>
+        <li>getConfig里面增加了getPushTimeInterval</li>
+        <li>getPushSMS的request中增加了groupIds参数传到后端</li>
+        <li>changePushStat的request中吧categoryName改成了groupId</li>
+        <li>修改logout接口为userLogout接口</li>
+        <li>logout接口request的时候增加传accessToken到后端</li>
+        <li>changePushStat接口request的时候增加传accessToken到后端</li>
+    </ul>
+</div>
+<div class="urls cf">
+    <span>志标: 这些是测试接口, 你先用这些调试. 第四个是调试翻页的, ts有值就ok. 后面的参数我都已经写清楚了, 点击查看.</span>
+    <a href="http://android.oilchem.net/sms/getConfig.do?accessToken=a3ab8d5f2d2041709954490d323c044a" target="_blank">
+        http://android.oilchem.net/sms/getConfig.do?accessToken=a3ab8d5f2d2041709954490d323c044a</a>
+    <a href="http://android.oilchem.net/sms/getCategories.do?accessToken=a3ab8d5f2d2041709954490d323c044a"
+       target="_blank">http://android.oilchem.net/sms/getCategories.do?accessToken=a3ab8d5f2d2041709954490d323c044a</a>
+    <a href="http://android.oilchem.net/sms/getMessageTrial.do?key=石油&ts=" target="_blank">
+        http://android.oilchem.net/sms/getMessageTrial.do?key=石油&ts=</a>
+    <a href="http://android.oilchem.net/sms/getMessageTrial.do?key=石油&ts=1231238232" target="_blank">
+        http://android.oilchem.net/sms/getMessageTrial.do?key=石油&ts=1231238232</a>
+    <a href="http://android.oilchem.net/sms/getMessages.do?accessToken=a3ab8d5f2d2041709954490d323c044a&ts="
+       target="_blank">http://android.oilchem.net/sms/getMessages.do?accessToken=a3ab8d5f2d2041709954490d323c044a&ts=</a>
+    <a href="http://android.oilchem.net/sms/changePushStat.do?groupId=4791&allowPush=1&accessToken=a3ab8d5f2d2041709954490d323c044a"
+       target="_blank">http://android.oilchem.net/sms/changePushStat.do?groupId=4791&allowPush=1&accessToken=a3ab8d5f2d2041709954490d323c044a</a>
+    <a href=http://android.oilchem.net/sms/getPushSMS.do?accessToken=a3ab8d5f2d2041709954490d323c044a&groupIds=4791,234,45,65,75,7"
+    target="_blank">http://android.oilchem.net/sms/getPushSMS.do?accessToken=a3ab8d5f2d2041709954490d323c044a&groupIds=4791,234,45,65,75,7</a>
+    <br/>
+    <a href="http://android.oilchem.net/user/userLogin.do?username=13002714165&password=abc123&imei=imei1234"
+       target="_blank">http://android.oilchem.net/user/userLogin.do?username=13002714165&password=abc123&imei=imei1234</a>
+    <a href="http://android.oilchem.net/user/userRegister.do?cell=18610105912&authCode=9a42" target="_blank">
+        http://android.oilchem.net/user/userRegister.do?cell=18610105912&authCode=9a42</a>
+    <a href="http://android.oilchem.net/user/authCode.do" target="_blank">
+        http://android.oilchem.net/user/authCode.do</a>
+    <a href="http://android.oilchem.net/user/updateApp.do?version=1.0" target="_blank">
+        http://android.oilchem.net/user/updateApp.do?version=1.0</a>
+    <a href="http://android.oilchem.net/user/userLogout.do?username=xxx&accessToken=lwjefljasldfjalsjdf"
+       target="_blank">http://android.oilchem.net/user/userLogout.do?username=xxx&accessToken=lwjefljasldfjalsjdf</a>
+</div>
+<div class="nav cf">
+    <ul>
+        <li><h2><a href="#apiAgreement">0.api公共约定</a></h2></li>
+        <li><h2><a href="#global">1.首页</a></h2></li>
+        <li><h2><a href="#indexPageAfter Login">2.登录后主页</a></h2></li>
+        <li><h2><a href="#settings">3.设置</a></h2></li>
+        <li><h2><a href="#pushSetting">4.短讯推送管理</a></h2></li>
+        <li><h2><a href="#push">5.推送</a></h2></li>
+    </ul>
+</div>
+<div id="apiAgreement">
+    <h3>0.api公共约定<a href="#">［返回顶部］</a></h3>
+
+    <div class="apiBlock">
+        <h4>Request公共约定</h4>
+            <pre class="brush: js;">
+            "GET POST PUT DELETE PATCH" 均基于RESTful API设计标准
+            "ts / time /date": 返回格式统一用timestamp
+            </pre>
+    </div>
+    <div class="apiBlock">
+        <h4>Response公共约定</h4>
+            <pre class="brush: js;">
+            {
+                "stat": "1", //0: 失败 1: 成功
+                "error": "", //stat为0时，提供错误信息
+                "data": {}   //数据体
+            }
+            </pre>
+    </div>
+</div>
+<div id="global">
+    <h3>1.首页<a href="#">［返回顶部］</a></h3>
+
+    <div class="apiBlock">
+        <h4>获取配置信息api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/getConfig.do?accessToken=a3ab8d5f2d2041709954490d323c044a
+                <pre class="brush: js;">
+                /getConfig.do?accessToken=a3ab8d5f2d2041709954490d323c044a //用户每次打开应用均需要同步服务器的config状态
+                "accessToken": 用户登录后所有请求均验证此token, 确保该用户身份
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "config": {
+                            "categories": [ //用户订阅的分类以及是否接收推送信息
+                                {
+                                    "groupId": "123",
+                                    "name": "成品油东营利津", //分类名称
+                                    "allowPush": "1" //0:不接收push, 1:接收push
+                                },
+                                {"groupId": "123", "name": "成品油东营利津","allowPush": "1"},
+                                {"groupId": "123", "name": "成品油东营利津","allowPush": "1"},
+                                {"groupId": "123", "name": "成品油东营利津","allowPush": "1"},
+                                {"groupId": "123", "name": "成品油东营利津","allowPush": "1"}
+                            ],
+                            "customerServicename": "张三",
+                            "customerServiceNumber": "0533-8888888",
+                            "registrationNumber": "400-888-8888",
+                            "pageSizeWhileSearchingLocalSMS": "10",
+                            "latestAppVersion": "1.0", //如果此版本大于本地版本，则跳出提示框来通过appDownload地址升级
+                            "appDownload": "http://www.oilchem.net/download/android/sms.apk",
+                            "getPushTimeInterval": "30" //获取push内容的轮询请求时间间隔 ,30指的是30秒
+                        }
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+    <div class="apiBlock">
+        <h4>单独获取短讯分类api - 在分类页面点击刷新按钮的时候用</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/getCategories.do?accessToken=a3ab8d5f2d2041709954490d323c044a
+                <pre class="brush: js;">
+                /getCategories.do?accessToken=a3ab8d5f2d2041709954490d323c044a //用户每次打开应用均需要同步服务器的config状态
+                "accessToken": 用户登录后所有请求均验证此token, 确保该用户身份
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "categories": [ //用户订阅的分类以及是否接收推送信息
+                            {
+                                "groupId": "123",
+                                "name": "成品油东营利津", //分类名称
+                                "allowPush": "1" //0:不接收push, 1:接收push
+                            },
+                            {"groupId": "123", "name": "成品油东营利津","allowPush": "1"},
+                            {"groupId": "123", "name": "成品油东营利津","allowPush": "1"},
+                            {"groupId": "123", "name": "成品油东营利津","allowPush": "1"},
+                            {"groupId": "123", "name": "成品油东营利津","allowPush": "1"}
+                        ]
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+    <div class="apiBlock">
+        <h4>云搜api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/getMessageTrial?key=石油&ts=
+                <pre class="brush: js;">
+                /getMessageTrial.do?key=你好&ts=
+                "key": 用户搜索时输入的关键字
+                "ts": 请求timestamp小于ts的条目，如果ts为空则取最新的x条数据，x由后端决定默认10条
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "key": "寿光", //用户搜索的关键词，如果没有则留空
+                        "ts": "1323308943", //按照时间倒排，最后一条信息的ts
+                        "messages": [
+                            {
+                                "groupId": "123",
+                                "title": "成品油寿光联盟",
+                                "ts": "1323308943",
+                                "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"
+                            },
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"}
+                        ]
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+    <div class="apiBlock">
+        <h4>登录api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/userLogin?username=13002714165&password=abc123&imei=imei1234
+                <pre class="brush: js;">
+                /userLogin?username=13002714165&password=abc123&imei=imei1234
+                "username": 用户名
+                "password": md5后的密码
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "login": "1", //0: 登录失败  1: 登录成功
+                        "message": "欢迎您登录xx客户端", //如果登录失败则返回失败原因
+                        "accessToken": "a3ab8d5f2d2041709954490d323c044a" //若果登录成功则返回一个通讯用的accessToken，否则为空
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+    <div class="apiBlock">
+        <h4>取得验证码api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/authCode.do
+                <pre class="brush: js;">
+                height是20，&width是90
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                返回图片二进制数据流
+                </pre>
+        </div>
+    </div>
+    <div class="apiBlock">
+        <h4>注册api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/userRegister.do?cell=18610105912&authCode=9a42
+                <pre class="brush: js;">
+                "在本Request之前，需要一个获取验证码图片的url，比如/authCode?height=20&width=90"
+                /userRegister.do?cell=18610105912&authCode=9a42
+                "cell": 用户手机号码
+                "authCode": 验证码，用于防止恶意注册
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "login": "1", //0: 注册失败  1: 注册成功
+                        "message": "已成功提交，请等待人工联系" //如果注册失败则返回失败原因
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+</div>
+<div id="indexPageAfterLogin">
+    <h3>2.登录后主页<a href="#">［返回顶部］</a></h3>
+
+    <div class="apiBlock">
+        <h4>获取7天内的最新信息api - 通过记录最后获取的ts来判断是否有新的信息</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/getMessages.do?accessToken=a3ab8d5f2d2041709954490d323c044a&ts=
+                <pre class="brush: js;">
+                /getMessages.do?accessToken=a3ab8d5f2d2041709954490d323c044a&ts=
+                "accessToken": 用户登录后所有请求均验证此token, 确保该用户身份
+                "ts": 记录最后一次获取信息的时间戳
+                      1 为空时, 说明是第一次取信息, 则返回最进7天的所有短讯
+                      2 为1323308943时, 返回大于此时间戳的所有短讯
+                      3 为1323308943时, 当前时间和此ts的差大于7天, 则认为ts为空
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "ts": "1323308943", //本次请求的服务器时间戳
+                        "messages": [ //返回最近7天的短讯 或 返回大于ts的最新的短讯
+                            {
+                                "groupId": "123",
+                                "title": "成品油寿光联盟",
+                                "ts": "1323308943",
+                                "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"
+                            },
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"}
+                        ]
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+</div>
+<div id="settings">
+    <h3>3.设置<a href="#">［返回顶部］</a></h3>
+
+    <div class="apiBlock">
+        <h4>检查更新api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/updateApp.do?version=1.0
+                <pre class="brush: js;">
+                /updateApp.do?version=1.0
+                "version": 1.0当前应用版本号
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "update": "1", //0: 不需要更新  1: 需要更新
+                        "downloadUrl": "http://www.oilchem.net/download/android/sms.apk" //如果update为0,则不需要更新,这里返回空即可.
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+    <div class="apiBlock">
+        <h4>注销api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/userLogout.do?username=xxx&accessToken=lwjefljasldfjalsjdf
+                <pre class="brush: js;">
+                /userLogout.do?username=xxx&accessToken=lwjefljasldfjalsjdf
+                "username": 用户名
+                "accessToken": 用户登录后所有请求均验证此token, 确保该用户身份
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "logout": "1" //0: 注销失败  1: 注销成功(前端移除用户的accessToken)
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+</div>
+<div id="pushSetting">
+    <h3>4.短讯推送管理<a href="#">［返回顶部］</a></h3>
+
+    <div class="apiBlock">
+        <h4>更改推送状态api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/changePushStat.do?groupId=123&allowPush=1&accessToken=wke23jk23k23jr2
+                <pre class="brush: js;">
+                /changePushStat.do?groupId=123&allowPush=1&accessToken=wke23jk23k23jr2
+                "categoryName": 类别名称
+                "allowPush": 本类别是否接收推送信息,0: 不接收 1: 接收
+                "accessToken": 用户登录后所有请求均验证此token, 确保该用户身份
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "categories": [
+                            {
+                                "groupId": "123",
+                                "name": "成品油东营利津", //分类名称
+                                "allowPush": "1" //0:不接收push, 1:接收push
+                            }
+                        ]
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+</div>
+<div id="push">
+    <h3>5.推送<a href="#">［返回顶部］</a></h3>
+
+    <div class="apiBlock">
+        <h4>获取推送信息api</h4>
+
+        <div class="request">
+            <span class="type">GET</span>/getPushSMS.do?accessToken=a3ab8d5f2d2041709954490d323c044a&groupIds=123,234,45,65,75,7
+                <pre class="brush: js;">
+                /getPushSMS.do?accessToken=a3ab8d5f2d2041709954490d323c044a&groupIds=123,234,45,65,75,7
+                "accessToken": 用户登录后所有请求均验证此token, 确保该用户身份
+                "groupIds": 用户接收推送的短讯类别ID号
+                </pre>
+        </div>
+        <div class="response">
+                <pre class="brush: js;">
+                {
+                    "stat": "1",
+                    "error": "",
+                    "data": {
+                        "ts": "1323308943", //本次请求的服务器时间戳
+                        "messages": [ //根据ts 返回本地未获取过的最新短讯
+                            {
+                                "groupId": "123",
+                                "title": "成品油寿光联盟",
+                                "ts": "1323308943",
+                                "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"
+                            },
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"},
+                            {"groupId": "123", "title": "成品油寿光联盟", "ts": "1323308943", "content": "寿光联盟最新：-10号国二/国三/7850/7950，加氢催柴7050比重92,93号7830国四。"}
+                        ]
+                    }
+                }
+                </pre>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+</html>

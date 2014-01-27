@@ -2,7 +2,7 @@ package net.oilchem.user;
 
 import net.oilchem.common.BaseController;
 import net.oilchem.common.bean.NeedLogin;
-import net.oilchem.common.utils.EHCacheTool;
+import net.oilchem.common.utils.EHCacheUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Random;
 
 import static java.lang.String.format;
+import static java.util.UUID.randomUUID;
 import static net.oilchem.common.bean.Config.*;
 import static net.oilchem.common.utils.Md5Util.generatePassword;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -85,13 +86,13 @@ public class UserController extends BaseController {
             }
 
             if(imei.equals(dbUser.getImei()) || isBlank(dbUser.getImei())){        //imei相同
-                String token = request.getSession().getId();
+                String token = randomUUID().toString().replace("-", "");
                 user.setAccessToken(token);
-                user.setImei(dbUser.getImei());
+                user.setImei(imei);
             }else {                                   //imei不相同
                 //accessToken为空,更新accessToken
                 if ( isBlank(dbUser.getAccessToken())) {
-                    String token = request.getSession().getId();
+                    String token = randomUUID().toString().replace("-", "");
                     user.setAccessToken(token);
                     user.setImei(imei);
                 } else {
@@ -103,8 +104,7 @@ public class UserController extends BaseController {
             user.setStopClient(dbUser.getStopClient());
             user.setPassword(password);              //密码设置为加密后的密码
             user.setLastIp(getIpAddr(request));      //获得客户端ip
-
-            EHCacheTool.<User>setValue("user", user);
+            EHCacheUtil.<User>setValue("userCache", user.getAccessToken(), user);
             userRepository.updateLoginInfo(user);
             return format(json_format, "1", "",
                     "\"login\":\"1\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
@@ -113,16 +113,16 @@ public class UserController extends BaseController {
                 "\"login\":\"0\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
     }
 
-
+    @ResponseBody
     @RequestMapping("/userLogout")
     public String logout(HttpServletRequest request, SessionStatus sessionStatus,String accessToken) {
-        Object userObj = request.getSession().getAttribute("user");
-        User user = null;
-        if (userObj != null) {
-            user = (userObj!=null?(User)userObj:userRepository.findByAccessToken(accessToken));
+        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
+        if (user != null) {
+            user = (user==null?userRepository.findByAccessToken(accessToken):user);
         }
         if (!sessionStatus.isComplete() && user!=null) {
             userRepository.cleanAccessToken(user);
+            EHCacheUtil.removeElment("userCache",accessToken);
             sessionStatus.setComplete();
         }
         return format(json_format, "1", "",
@@ -132,18 +132,23 @@ public class UserController extends BaseController {
     @ResponseBody
     @RequestMapping("/userRegister")
     public String register(HttpServletRequest request, String cell, String authCode) {
-
-        String code = (String) request.getSession().getAttribute("authCode");
-        if (isNotBlank(cell)) {
+//        String code = EHCacheUtil.<String>getValue("authCodeCache", "authCode");
+        if (isBlank(cell)) {
             return format(json_format, "1", "",
                     "\"login\":\"0\",\"message\":\"手机号码为空，注册失败\"");
         }
-        if (isNotBlank(authCode) && authCode.equals(code)) {
+        if (isNotBlank(authCode) && authCode.toUpperCase()
+                .equals((String)request.getSession().getAttribute("authCode"))) {
             String clientIp = getIpAddr(request);
             User user = new User(cell, clientIp);
-            userRepository.register(user);
-            return format(json_format, "1", "",
-                    "\"login\":\"1\",\"message\":\"已成功提交，请等待人工联系\"");
+            if(!userRepository.exsitUser(user)){
+                userRepository.register(user);
+                return format(json_format, "1", "",
+                        "\"login\":\"1\",\"message\":\"已成功提交，请等待人工联系\"");
+            }else {
+                return format(json_format, "1", "",
+                        "\"login\":\"1\",\"message\":\"号码已注册，无需重复注册，请等待人工联系\"");
+            }
         } else {
             return format(json_format, "1", "",
                     "\"login\":\"1\",\"message\":\"验证码有误，注册失败\"");
@@ -160,9 +165,11 @@ public class UserController extends BaseController {
         int xx = 15;
         int fontHeight = 18;
         int codeY = 16;
-        char[] codeSequence = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
-                'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+//        char[] codeSequence = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+//                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W',
+//                'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+
+        char[] codeSequence = {  '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
         // 定义图像buffer
         BufferedImage buffImg = new BufferedImage(width, height,
@@ -202,7 +209,7 @@ public class UserController extends BaseController {
         // 随机产生codeCount数字的验证码。
         for (int i = 0; i < codeCount; i++) {
             // 得到随机产生的验证码数字。
-            String code = String.valueOf(codeSequence[random.nextInt(36)]);
+            String code = String.valueOf(codeSequence[random.nextInt(9)]);
             // 产生随机的颜色分量来构造颜色值，这样输出的每位数字的颜色值都将不同。
             red = random.nextInt(255);
             green = random.nextInt(255);
@@ -217,8 +224,9 @@ public class UserController extends BaseController {
         }
         // 将四位数字的验证码保存到Session中。
         HttpSession session = req.getSession();
-        System.out.print(randomCode);
-        session.setAttribute("authCode", randomCode.toString());
+        session.setMaxInactiveInterval(300);
+        session.setAttribute("authCode", randomCode.toString().toUpperCase());
+//        EHCacheUtil.<String>setValue("authCodeCache", "authCode",randomCode.toString().toUpperCase(),300);
 
         // 禁止图像缓存。
         resp.setHeader("Pragma", "no-cache");

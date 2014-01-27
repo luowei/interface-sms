@@ -33,7 +33,7 @@ public class InerCache {
         }
 
         try {
-            String sql = " select GroupID,GroupShowName ET_SmsUserGroup ";
+            String sql = " select GroupID,GroupShowName from ET_SmsUserGroup ";
             JdbcTemplate jdbcTemplate = new JdbcTemplate(BasicDataSource.class.cast(getCurrentWebApplicationContext().getBean("dataSource")));
             List<Group> uidNameList = jdbcTemplate.query(sql, new RowMapper<Group>() {
                 @Override
@@ -58,7 +58,7 @@ public class InerCache {
 
     }
 
-    public static Map<Integer, Group> getUserMap() {
+    public static Map<Integer, Group> getGroupMap() {
         if (inerCache == null) {
             inerCache = new InerCache();
         }

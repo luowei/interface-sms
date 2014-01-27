@@ -62,7 +62,7 @@ public class User implements Serializable {
     }
 
     public User setUsername(String username) {
-        this.username = username;
+        this.username = (username!=null?username.trim():username);
         return this;
     }
 
