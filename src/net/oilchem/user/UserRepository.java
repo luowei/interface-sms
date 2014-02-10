@@ -67,6 +67,7 @@ public class UserRepository extends JdbcDaoSupport {
                         );
                         user.setStopClient(rs.getInt("user_stopClient"));
                         user.setImei(rs.getString("User_IMEI"));
+                        user.setRealName(rs.getString("user_mobilelxr"));
                         return user;
                     }
                 }
@@ -110,6 +111,7 @@ public class UserRepository extends JdbcDaoSupport {
                         );
                         user.setImei(rs.getString("User_IMEI"));
                         user.setStopClient(rs.getInt("user_stopClient"));
+                        user.setRealName(rs.getString("user_mobilelxr"));
                         return user;
                     }
                 }

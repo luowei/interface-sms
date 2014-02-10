@@ -99,6 +99,7 @@ public class SmsController extends BaseController {
         configMap.put("pageSizeWhileSearchingLocalSMS", String.valueOf(pageSizeWhileSearchingLocalSMS));
         configMap.put("latestAppVersion", latestAppVersion);
         configMap.put("appDownload",appDownload);
+        configMap.put("getPushTimeInterval",String.valueOf(getPushTimeInterval));
 
         dataMap.put("config",configMap);
         JsonRet<Map> ret = new JsonRet<Map>();

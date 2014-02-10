@@ -14,6 +14,7 @@ public class User implements Serializable {
 
     Integer id;
     String username;
+    String realName;
     String password;
     String accessToken;
     String Imei;
@@ -64,6 +65,14 @@ public class User implements Serializable {
     public User setUsername(String username) {
         this.username = (username!=null?username.trim():username);
         return this;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 
     public String getPassword() {

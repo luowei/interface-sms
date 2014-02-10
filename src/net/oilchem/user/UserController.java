@@ -82,7 +82,7 @@ public class UserController extends BaseController {
             //找不到此用户
             if (dbUser == null) {
                 return format(json_format, "1", "",
-                        "\"login\":\"0\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
+                        "\"login\":\"0\",\"username\":\"\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
             }
 
             if(imei.equals(dbUser.getImei()) || isBlank(dbUser.getImei())){        //imei相同
@@ -97,20 +97,21 @@ public class UserController extends BaseController {
                     user.setImei(imei);
                 } else {
                     return format(json_format, "1", "",
-                            "\"login\":\"0\",\"message\":\"用户已在其它设备登录，请注销后再登录\",\"accessToken\":\"\"");
+                            "\"login\":\"0\",\"username\":\"\",\"message\":\"用户已在其它设备登录，请注销后再登录\",\"accessToken\":\"\"");
                 }
             }
 
             user.setStopClient(dbUser.getStopClient());
+            user.setRealName(dbUser.getRealName());
             user.setPassword(password);              //密码设置为加密后的密码
             user.setLastIp(getIpAddr(request));      //获得客户端ip
             EHCacheUtil.<User>setValue("userCache", user.getAccessToken(), user);
             userRepository.updateLoginInfo(user);
             return format(json_format, "1", "",
-                    "\"login\":\"1\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
+                    "\"login\":\"1\",\"username\":\""+user.getRealName()+"\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
         }
         return format(json_format, "1", "",
-                "\"login\":\"0\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
+                "\"login\":\"0\",\"username\":\"\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
     }
 
     @ResponseBody
