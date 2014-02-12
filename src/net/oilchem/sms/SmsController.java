@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static net.oilchem.common.bean.Config.*;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
@@ -129,8 +126,9 @@ public class SmsController extends BaseController {
 
         smsRepository.updateCategories(user,group);
         group.setId(isNumeric(group.getGroupId())?Integer.valueOf(group.getGroupId()):null);
-
-        dataMap.put("categories",group);
+        List<Group> groups = new ArrayList<Group>();
+        groups.add(group);
+        dataMap.put("categories",groups);
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(dataMap);
         return ret;

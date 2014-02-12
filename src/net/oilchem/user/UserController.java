@@ -23,7 +23,6 @@ import java.util.Random;
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
 import static net.oilchem.common.bean.Config.*;
-import static net.oilchem.common.utils.Md5Util.generatePassword;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -71,7 +70,8 @@ public class UserController extends BaseController {
     public String login(HttpServletRequest request, User user) {
 
         String username = user.getUsername();
-        String password = (user.getPassword() != null ? generatePassword(user.getPassword()) : user.getPassword());
+//        String password = (user.getPassword() != null ? generatePassword(user.getPassword()) : user.getPassword());
+        String password =  user.getPassword();
         user.setPassword(password);
         String imei = user.getImei();
 
