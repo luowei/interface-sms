@@ -80,8 +80,20 @@ public class UserRepository extends JdbcDaoSupport {
 
     public int updateLoginInfo(User user) {
         String sql = " update LZ_SMSUserMobile set User_accessToken= '" + user.getAccessToken() + "' , User_LastIP='" + user.getLastIp() +
-                "',User_IMEI='"+(user.getImei()==null?"":user.getImei())+"' , User_LastTime=GETDATE(),User_LoginTimes=User_LoginTimes+1 " +
-                " where user_mobile='" + user.getUsername() + "' and User_PWD='" + user.getPassword() + "' ";
+                "',User_IMEI='"+(user.getImei()==null?"":user.getImei())+"' , User_LastTime=GETDATE(),User_LoginTimes=User_LoginTimes+1, user_ViewTime=GETDATE()  " +
+                " where user_mobile='" + user.getUsername() + "' ";
+        return getJdbcTemplate().update(sql);
+    }
+
+    public int updateViewtime(User user) {
+        String sql = " update LZ_SMSUserMobile set  user_ViewTime=GETDATE() " +
+                " where user_mobile='" + user.getUsername() + "' ";
+        return getJdbcTemplate().update(sql);
+    }
+
+    public int updateToken(User user) {
+        String sql = " update LZ_SMSUserMobile set User_accessToken= '" +user.getAccessToken() + "'" +
+                " where user_mobile='" + user.getUsername() + "' ";
         return getJdbcTemplate().update(sql);
     }
 
@@ -129,7 +141,7 @@ public class UserRepository extends JdbcDaoSupport {
     }
 
     public int cleanAccessToken(User user) {
-        String sql = " update LZ_SMSUserMobile set User_accessToken='' where user_mobile='"+user.getUsername()+"' ";
+        String sql = " update LZ_SMSUserMobile set User_accessToken='', user_ViewTime=GETDATE()-1 where user_mobile='"+user.getUsername()+"' ";
         return getJdbcTemplate().update(sql);
     }
 
@@ -138,4 +150,6 @@ public class UserRepository extends JdbcDaoSupport {
         String mobileSql = " select count(*) from LZ_SMSUserMobile where user_mobile='"+user.getUsername()+"' ";
         return getJdbcTemplate().queryForInt(sql) > 0 || getJdbcTemplate().queryForInt(mobileSql) > 0;
     }
+
+
 }

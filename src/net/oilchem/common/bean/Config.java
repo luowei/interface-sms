@@ -31,7 +31,7 @@ public class Config implements ServletContextListener {
     public static String registrationNumber = "400-658-1688";
     public static Integer pageSizeWhileSearchingLocalSMS = 10;
     public static String appDownload = "http://www.oilchem.net/download/android/sms.apk";
-    public static Integer getPushTimeInterval = 30;
+    public static Integer getPushTimeInterval = 60;
 
     public static String login_success = "登录成功";
     public static String login_faild = "登录失败";

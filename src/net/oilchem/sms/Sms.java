@@ -142,7 +142,7 @@ public class Sms implements Serializable {
 
     //    @SuppressWarnings("deprecation")
     //    @JsonWriteNullProperties(false)
-    @JsonIgnore
+//    @JsonIgnore
 //    @JsonProperty("groupName")
     public String getGroupName() {
         if (groupId != null) {

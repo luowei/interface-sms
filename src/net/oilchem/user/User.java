@@ -19,6 +19,8 @@ public class User implements Serializable {
     String accessToken;
     String Imei;
 
+    Date viewTime;
+
     String ipRight;        //ip权限
     String lastIp;         //上次登录ip
     Date lasttime;         //上次登录时间
@@ -90,6 +92,14 @@ public class User implements Serializable {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    public Date getViewTime() {
+        return viewTime;
+    }
+
+    public void setViewTime(Date viewTime) {
+        this.viewTime = viewTime;
     }
 
     public String getImei() {

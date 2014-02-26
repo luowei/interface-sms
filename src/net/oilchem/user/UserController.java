@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -57,12 +56,11 @@ public class UserController extends BaseController {
                 "\"login\":\"0\",\"message\":\"" + authentication_faild + "\",\"accessToken\":\"\"");
     }
 
-
-
     @ResponseBody
     @RequestMapping("/noData")
-    public String noData() {
-        return format(json_format, "1", "","");
+    public String noData(HttpServletRequest request) {
+        return format(json_format, "1", "",
+                "\"accessToken\":\""+String.valueOf(request.getAttribute("accessToken"))+"\"");
     }
 
     @ResponseBody
@@ -105,7 +103,7 @@ public class UserController extends BaseController {
             user.setRealName(dbUser.getRealName());
             user.setPassword(password);              //密码设置为加密后的密码
             user.setLastIp(getIpAddr(request));      //获得客户端ip
-            EHCacheUtil.<User>setValue("userCache", user.getAccessToken(), user);
+            EHCacheUtil.<User>setValue("smsUserCache", user.getAccessToken(), user);
             userRepository.updateLoginInfo(user);
             return format(json_format, "1", "",
                     "\"login\":\"1\",\"username\":\""+user.getRealName()+"\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
@@ -117,13 +115,15 @@ public class UserController extends BaseController {
     @ResponseBody
     @RequestMapping("/userLogout")
     public String logout(HttpServletRequest request, SessionStatus sessionStatus,String accessToken) {
-        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+
         if (user != null) {
             user = (user==null?userRepository.findByAccessToken(accessToken):user);
         }
         if (!sessionStatus.isComplete() && user!=null) {
             userRepository.cleanAccessToken(user);
-            EHCacheUtil.removeElment("userCache",accessToken);
+            EHCacheUtil.removeElment("smsUserCache",accessToken);
             sessionStatus.setComplete();
         }
         return format(json_format, "1", "",
@@ -138,8 +138,12 @@ public class UserController extends BaseController {
             return format(json_format, "1", "",
                     "\"login\":\"0\",\"message\":\"手机号码为空，注册失败\"");
         }
-        if (isNotBlank(authCode) && authCode.toUpperCase()
-                .equals((String)request.getSession().getAttribute("authCode"))) {
+
+        String sessionId = request.getHeader("sessionId");
+        String code = isNotBlank(sessionId)? EHCacheUtil.<String>getValue("authCodeCache", sessionId): null;
+
+        if (isNotBlank(authCode) && isNotBlank(code)
+                && authCode.toUpperCase().equals(code)) {
             String clientIp = getIpAddr(request);
             User user = new User(cell, clientIp);
             if(!userRepository.exsitUser(user)){
@@ -224,10 +228,13 @@ public class UserController extends BaseController {
             randomCode.append(code);
         }
         // 将四位数字的验证码保存到Session中。
-        HttpSession session = req.getSession();
-        session.setMaxInactiveInterval(300);
-        session.setAttribute("authCode", randomCode.toString().toUpperCase());
-//        EHCacheUtil.<String>setValue("authCodeCache", "authCode",randomCode.toString().toUpperCase(),300);
+//        HttpSession session = req.getSession();
+//        session.setMaxInactiveInterval(300);
+//        session.setAttribute("authCode", randomCode.toString().toUpperCase());
+
+        String sessionId = randomUUID().toString().replace("-", "");
+        EHCacheUtil.<String>setValue("authCodeCache", sessionId,randomCode.toString().toUpperCase(),300);
+        resp.setHeader("sessionId",sessionId);
 
         // 禁止图像缓存。
         resp.setHeader("Pragma", "no-cache");
@@ -245,7 +252,7 @@ public class UserController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/updateApp")
-    public String updateApp(HttpServletRequest request, String version) {
+    public String updateApp(String version) {
         int update = 0;
         String downloadUrl = "";
         if (isNotBlank(version) && !version.equals(latestAppVersion)) {
@@ -256,5 +263,12 @@ public class UserController extends BaseController {
                 "\"update\":\"" + update + "\",\"downloadUrl\":\"" + downloadUrl + "\"");
     }
 
+
+    @ResponseBody
+    @RequestMapping("/getAuthCode")
+    public String getAuthCode(){
+        return format(json_format, "1", "",
+                "\"url\":\"http://android.oilchem.net/user/authCode.do\"");
+    }
 
 }

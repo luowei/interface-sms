@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta http-equiv=Content-Type content="text/html;charset=utf-8">
+    <script type="text/javascript">
+        var submitWithHead = function(){
+            var request = new XMLHttpRequest();
+            var path="http://localhost:8080/user/userRegister.do?cell=13874505867&authCode=1234";
+            request.onreadystatechange=state_change;
+
+            request.open("GET", path, true);
+            request.setRequestHeader("Referer", "http://www.google.com");
+            //request.setRequestHeader("User-Agent", "Mozilla/5.0");
+            request.setRequestHeader("Accept","text/plain");
+            request.setRequestHeader("Content-Type","text/plain");
+
+            var sessionId = document.getElementById("sessionId").value
+            request.setRequestHeader("sessionId",sessionId)
+            alert(sessionId)
+
+            request.send(null);
+            function state_change()
+            {
+                if (request.readyState==4)
+                {// 4 = "loaded"
+                    if (request.status==200)
+                    {// 200 = OK
+                        // ...our code here...
+                        alert('ok');
+                        console.log('ok')
+                    }
+                    else
+                    {
+                        alert("Problem retrieving XML data");
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+sessionId:<input id="sessionId"> <br/>
+<input type="button" value="提交" onclick="submitWithHead()">
+</body>
+</html>

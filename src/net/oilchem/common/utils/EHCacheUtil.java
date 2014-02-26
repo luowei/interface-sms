@@ -33,7 +33,8 @@ public class EHCacheUtil {
                                 .timeToIdleSeconds(inerCache_expire/2)
                                 .diskPersistent(false)
                                 .diskExpiryThreadIntervalSeconds(0));
-                myManager.addCache(myCache);
+                    myManager.addCache(myCache);
+
             }
             return myCache;
         } catch (Exception e) {

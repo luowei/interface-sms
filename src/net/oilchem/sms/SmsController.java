@@ -1,6 +1,7 @@
 package net.oilchem.sms;
 
 import net.oilchem.common.BaseController;
+import net.oilchem.common.bean.InerCache;
 import net.oilchem.common.bean.JsonRet;
 import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.common.utils.EHCacheUtil;
@@ -34,32 +35,43 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getPushSMS")
-    public JsonRet<Map> getPushSMS(HttpServletRequest request,Sms sms,String accessToken){
+    public JsonRet<Map> getPushSMS(HttpServletRequest request, Sms sms, String accessToken) {
 
-        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
 
         Map map = new HashMap();
-        map.put("ts",String.valueOf(new Date().getTime()));
+        map.put("ts", String.valueOf(new Date().getTime()));
 
         List<Sms> smsList = smsRepository.getPushSMS(user, sms);
 
-        map.put("messages",smsList);
+        map.put("messages", smsList);
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(map);
         return ret;
     }
 
+    /**
+     * 取当天的信息
+     *
+     * @param request
+     * @param sms
+     * @param accessToken
+     * @return
+     */
     @ResponseBody
     @RequestMapping("/getMessages")
-    public JsonRet<Map> getMessages(HttpServletRequest request,Sms sms,String accessToken){
-        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
+    public JsonRet<Map> getMessages(HttpServletRequest request, Sms sms, String accessToken) {
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
 
         Map map = new HashMap();
-        map.put("ts",String.valueOf(new Date().getTime()));
+        map.put("ts", String.valueOf(new Date().getTime()));
+        map.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
 
         List<Sms> smsList = smsRepository.getMessages(user, sms);
 
-        map.put("messages",smsList);
+        map.put("messages", smsList);
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(map);
         return ret;
@@ -68,14 +80,14 @@ public class SmsController extends BaseController {
     @NeedLogin(false)
     @ResponseBody
     @RequestMapping("/getMessageTrial")
-    public JsonRet<Map> getMessageTrial(String key,String ts){
+    public JsonRet<Map> getMessageTrial(String key, String ts) {
 
         Map map = new HashMap();
-        map.put("ts",String.valueOf(new Date().getTime()));
+        map.put("ts", String.valueOf(new Date().getTime()));
 
-        List<Sms> smsList = smsRepository.getMessageTrial(key,ts);
+        List<Sms> smsList = smsRepository.getMessageTrial(key, ts);
 
-        map.put("messages",smsList);
+        map.put("messages", smsList);
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(map);
         return ret;
@@ -83,22 +95,26 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getConfig")
-    public JsonRet<Map> getConfig(String accessToken) throws IOException {
-        User user = EHCacheUtil.<User>getValue("userCache",accessToken);
+    public JsonRet<Map> getConfig(String accessToken, HttpServletRequest request) throws IOException {
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+
         Map dataMap = new HashMap();
         Map configMap = new HashMap();
 
-        List<Group> groups=smsRepository.getCategories(user);
+        List<Group> groups = smsRepository.getCategories(user);
 
-        configMap.put("categories",groups);
-        configMap.put("customerServicename",customerServicename);
-        configMap.put("customerServiceNumber",customerServiceNumber);
+        configMap.put("categories", groups);
+        configMap.put("customerServicename", customerServicename);
+        configMap.put("customerServiceNumber", customerServiceNumber);
         configMap.put("pageSizeWhileSearchingLocalSMS", String.valueOf(pageSizeWhileSearchingLocalSMS));
         configMap.put("latestAppVersion", latestAppVersion);
-        configMap.put("appDownload",appDownload);
-        configMap.put("getPushTimeInterval",String.valueOf(getPushTimeInterval));
+        configMap.put("appDownload", appDownload);
+        configMap.put("getPushTimeInterval", String.valueOf(getPushTimeInterval));
 
-        dataMap.put("config",configMap);
+        configMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
+
+        dataMap.put("config", configMap);
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(dataMap);
         return ret;
@@ -106,12 +122,17 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getCategories")
-    public JsonRet<Map> getCategories(String accessToken){
-        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
+    public JsonRet<Map> getCategories(String accessToken, HttpServletRequest request) {
+
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+
         Map dataMap = new HashMap();
 
-        List<Group> groups=smsRepository.getCategories(user);
-        dataMap.put("categories",groups);
+        List<Group> groups = smsRepository.getCategories(user);
+        dataMap.put("categories", groups);
+
+        dataMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
 
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(dataMap);
@@ -120,18 +141,29 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/changePushStat")
-    public JsonRet<Map> changePushStat(String accessToken,Group group){
-        User user = EHCacheUtil.<User>getValue("userCache", accessToken);
+    public JsonRet<Map> changePushStat(String accessToken, Group group, HttpServletRequest request) {
+
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+
         Map dataMap = new HashMap();
 
-        smsRepository.updateCategories(user,group);
-        group.setId(isNumeric(group.getGroupId())?Integer.valueOf(group.getGroupId()):null);
+        smsRepository.updateCategories(user, group);
+        group.setId(isNumeric(group.getGroupId()) ? Integer.valueOf(group.getGroupId()) : null);
         List<Group> groups = new ArrayList<Group>();
         groups.add(group);
-        dataMap.put("categories",groups);
+        dataMap.put("categories", groups);
+        dataMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(dataMap);
         return ret;
+    }
+
+    @ResponseBody
+    @RequestMapping("/clearGroupCache")
+    public String clearGroupCache(){
+        InerCache.clearCache();
+        return " clear cache ok !";
     }
 
 }
