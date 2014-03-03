@@ -145,9 +145,9 @@ public class Sms implements Serializable {
 //    @JsonIgnore
 //    @JsonProperty("groupName")
     public String getGroupName() {
-        if (groupId != null) {
-            Group group = InerCache.getGroupMap().get(groupId);
-            groupName = group == null ? "" : group.getName();
+        if (gId != null) {
+            Group group = InerCache.getGroupMap().get(gId);
+            groupName = group == null ? "" : group.getGroupName();
         }
         return groupName==null?"":groupName;
     }

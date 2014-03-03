@@ -42,6 +42,7 @@ public class SmsController extends BaseController {
 
         Map map = new HashMap();
         map.put("ts", String.valueOf(new Date().getTime()));
+        map.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
 
         List<Sms> smsList = smsRepository.getPushSMS(user, sms);
 
@@ -112,8 +113,7 @@ public class SmsController extends BaseController {
         configMap.put("appDownload", appDownload);
         configMap.put("getPushTimeInterval", String.valueOf(getPushTimeInterval));
 
-        configMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
-
+        dataMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
         dataMap.put("config", configMap);
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(dataMap);
@@ -159,11 +159,12 @@ public class SmsController extends BaseController {
         return ret;
     }
 
+    @NeedLogin(false)
     @ResponseBody
     @RequestMapping("/clearGroupCache")
     public String clearGroupCache(){
         InerCache.clearCache();
-        return " clear cache ok !";
+        return "var json = {'result':'1',message:'1'};";
     }
 
 }

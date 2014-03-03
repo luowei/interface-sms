@@ -1,8 +1,6 @@
 package net.oilchem;
 
-import net.oilchem.common.utils.Md5Util;
-
-import java.text.SimpleDateFormat;
+import net.oilchem.common.utils.JiamiJiemi;
 
 /**
  * Created with IntelliJ IDEA.
@@ -13,7 +11,7 @@ import java.text.SimpleDateFormat;
  */
 public class Test {
 
-    public static void main(String []args) throws Exception {
+    public static void main(String[] args) throws Exception {
 
 //        URL url = new URL ("http://localhost:8080/user/userRegister.do?cell=13874605899&authCode=1935");
 //
@@ -26,10 +24,28 @@ public class Test {
 //
 //        InputStream response = conn.getInputStream();
 
-        System.out.println(Md5Util.generatePassword("13233302958"));
+//        System.out.println(Md5Util.generatePassword("13233302958"));
+//
+//        System.out.println(new SimpleDateFormat("yyyy-MM-dd").parse("2013-02-20").getTime());
+//
+        System.out.println(Character.toString((char) 65));
+        System.out.println(Character.toString((char) 97));
+        System.out.println(Character.toString((char) 48));
+        System.out.println(Character.toString((char) 57));
+//
+//        System.out.println((int) 'Z');
 
-        System.out.println(new SimpleDateFormat("yyyy-MM-dd").parse("2013-02-20").getTime());
+        String in = "AKSZ0349aDYz";
+        System.out.println(in);
+        //加密
+        String out = JiamiJiemi.encode(in);
+        System.out.println(out);
+        //解密
+        in = JiamiJiemi.decode(out);
+        System.out.println(in);
 
     }
+
+
 
 }

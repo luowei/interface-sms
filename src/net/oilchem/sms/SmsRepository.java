@@ -71,7 +71,7 @@ public class SmsRepository extends JdbcDaoSupport {
             sql = sql + " and sms_GroupId in ("+sms.getGroupIds()+")";
         }
 
-        sql = sql + " order by sms_GroupId,sms_time desc ";
+        sql = sql + " order by sms_time desc ";
         List<Sms> list = getJdbcTemplate().query(sql,
                 new RowMapper<Sms>() {
                     @Override
@@ -207,23 +207,21 @@ public class SmsRepository extends JdbcDaoSupport {
         String day = sdf.format(cal.getTime());
         String monthDay = sdf.format(cal2.getTime());
 
-        String sql = " select top "+ pageSizeWhileSearchingLocalSMS+" sms_id,sms_message,sms_time,sms_GroupId " +
-                " from Et_Sms_Backup with (NOLOCK)  where sms_GroupId > 0 " +
-                "and sms_time < '"+day+"' and sms_time > '"+monthDay+"' ";
+        String sql = " select top "+ pageSizeWhileSearchingLocalSMS+" sendMsg_ID,sendMsg_content,sendMsg_AddTime,sendMsg_GroupID " +
+                " from ET_SMS_SendMsg with (NOLOCK)  where sendMsg_GroupID is not null " +
+                "and sendMsg_AddTime < '"+day+"' and sendMsg_AddTime > '"+monthDay+"' ";
         if(isNotBlank(key)){
-            sql = sql + " and sms_message like '%"+key+"%' ";
+            sql = sql + " and sendMsg_content like '%"+key+"%' ";
         }
-        sql = sql + " order by sms_GroupId,sms_time desc ";
+        sql = sql + " order by sendMsg_AddTime desc ";
 
         return getJdbcTemplate().query(sql,new RowMapper<Sms>() {
             @Override
             public Sms mapRow(ResultSet rs, int i) throws SQLException {
-                Sms sms = new Sms(
-                        rs.getInt("sms_id"),
-                        rs.getTimestamp("sms_time"),
-                        rs.getString("sms_message"),
-                        rs.getInt("sms_GroupId")
-                );
+                Sms sms = new Sms();
+                sms.setId(rs.getInt("sendMsg_ID"));
+                sms.setContent(rs.getString("sendMsg_content"));
+                sms.setTime(rs.getTimestamp("sendMsg_AddTime"));
                 return sms;
             }
         });

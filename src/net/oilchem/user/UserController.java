@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
@@ -114,17 +113,16 @@ public class UserController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/userLogout")
-    public String logout(HttpServletRequest request, SessionStatus sessionStatus,String accessToken) {
+    public String logout(HttpServletRequest request, String accessToken) {
         User user = EHCacheUtil.<User>getValue("smsUserCache",
                 String.valueOf(request.getAttribute("accessToken")));
 
-        if (user != null) {
+        if (user == null) {
             user = (user==null?userRepository.findByAccessToken(accessToken):user);
         }
-        if (!sessionStatus.isComplete() && user!=null) {
+        if (user!=null) {
             userRepository.cleanAccessToken(user);
-            EHCacheUtil.removeElment("smsUserCache",accessToken);
-            sessionStatus.setComplete();
+            EHCacheUtil.removeElment("smsUserCache",user.getAccessToken());
         }
         return format(json_format, "1", "",
                 "\"logout\":\"1\"");
