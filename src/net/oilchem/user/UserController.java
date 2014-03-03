@@ -3,6 +3,7 @@ package net.oilchem.user;
 import net.oilchem.common.BaseController;
 import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.common.utils.EHCacheUtil;
+import net.oilchem.common.utils.JiamiJiemi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -116,6 +117,8 @@ public class UserController extends BaseController {
     public String logout(HttpServletRequest request, String accessToken) {
         User user = EHCacheUtil.<User>getValue("smsUserCache",
                 String.valueOf(request.getAttribute("accessToken")));
+
+        accessToken = JiamiJiemi.decode(accessToken);
 
         if (user == null) {
             user = (user==null?userRepository.findByAccessToken(accessToken):user);
