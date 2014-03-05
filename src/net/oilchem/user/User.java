@@ -17,6 +17,7 @@ public class User implements Serializable {
     String realName;
     String password;
     String accessToken;
+    String accessTokenbak;
     String Imei;
 
     Date viewTime;
@@ -92,6 +93,14 @@ public class User implements Serializable {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    public String getAccessTokenbak() {
+        return accessTokenbak;
+    }
+
+    public void setAccessTokenbak(String accessTokenbak) {
+        this.accessTokenbak = accessTokenbak;
     }
 
     public Date getViewTime() {

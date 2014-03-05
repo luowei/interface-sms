@@ -3,7 +3,6 @@ package net.oilchem.user;
 import net.oilchem.common.BaseController;
 import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.common.utils.EHCacheUtil;
-import net.oilchem.common.utils.JiamiJiemi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -104,6 +103,7 @@ public class UserController extends BaseController {
             user.setPassword(password);              //密码设置为加密后的密码
             user.setLastIp(getIpAddr(request));      //获得客户端ip
             EHCacheUtil.<User>setValue("smsUserCache", user.getAccessToken(), user);
+//            userRepository.updateAccessTokenbak(user.getAccessToken());
             userRepository.updateLoginInfo(user);
             return format(json_format, "1", "",
                     "\"login\":\"1\",\"username\":\""+user.getRealName()+"\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
@@ -118,7 +118,7 @@ public class UserController extends BaseController {
         User user = EHCacheUtil.<User>getValue("smsUserCache",
                 String.valueOf(request.getAttribute("accessToken")));
 
-        accessToken = JiamiJiemi.decode(accessToken);
+//        accessToken = JiamiJiemi.decode(accessToken);
 
         if (user == null) {
             user = (user==null?userRepository.findByAccessToken(accessToken):user);

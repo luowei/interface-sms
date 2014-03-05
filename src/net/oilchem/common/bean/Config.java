@@ -38,6 +38,8 @@ public class Config implements ServletContextListener {
     public static String authentication_faild = "验证失败";
     public static String login_stop = "账号已停用";
 
+    public static String global_groups = "";
+
     public static Long inerCache_expire = 24 * 3600 * 1000L;
 
     @Override
@@ -72,6 +74,9 @@ public class Config implements ServletContextListener {
 
         String _appDownload = map.get("appDownload");
         appDownload = (_appDownload != null && _appDownload !="")?_appDownload:appDownload;
+
+        String _global_groups = map.get("global_groups");
+        global_groups = (_global_groups != null && _global_groups !="")?_global_groups:global_groups;
 
         Integer _getPushTimeInterval = Integer.valueOf(map.get("getPushTimeInterval"));
         getPushTimeInterval = (_getPushTimeInterval != null && _getPushTimeInterval >= 0) ? _getPushTimeInterval : getPushTimeInterval;

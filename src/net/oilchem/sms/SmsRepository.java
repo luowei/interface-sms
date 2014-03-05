@@ -1,5 +1,6 @@
 package net.oilchem.sms;
 
+import net.oilchem.common.utils.EHCacheUtil;
 import net.oilchem.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -16,7 +17,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import static net.oilchem.common.bean.Config.global_groups;
 import static net.oilchem.common.bean.Config.pageSizeWhileSearchingLocalSMS;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -51,27 +54,34 @@ public class SmsRepository extends JdbcDaoSupport {
         int day = 0;
         String ts = "";
 
-        if(sms.getTime()!=null){
+        if (sms.getTime() != null) {
             cal.setTime(sms.getTime());
             day = cal.get(Calendar.DAY_OF_YEAR);
             ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(sms.getTime());
-            sql = sql + " and sms_time >= '"+ts+"'";
+            sql = sql + " and sms_time > '" + ts + "'";
         }
 
-        Calendar cal2 = Calendar.getInstance();
-        cal2.add(Calendar.DAY_OF_YEAR,-7);
+//        Calendar cal2 = Calendar.getInstance();
+//        cal2.add(Calendar.DAY_OF_YEAR, -7);
+//
+//        if (day != 0 && day != today) {
+//            String sevenDayStr = sdf.format(cal2.getTime());
+//            sql = " select top 10 sms_id,sms_time,sms_message,sms_GroupId from Et_Sms_Backup with (NOLOCK)  " +
+//                    " where sms_phone='" + user.getUsername() + "' and sms_time>='" + sevenDayStr + "' and  sms_time >= '" + ts + "' ";
+//        }
 
-        if(day!=0 && day != today){
-            String sevenDayStr = sdf.format(cal2.getTime());
-            sql = " select top 10 sms_id,sms_time,sms_message,sms_GroupId from Et_Sms_Backup with (NOLOCK)  " +
-                    " where sms_phone='" + user.getUsername() + "' and sms_time>='"+sevenDayStr+"' and  sms_time >= '"+ts+"' ";
+//        if (isNotBlank(sms.getGroupIds())) {
+//            sql = sql + " and sms_GroupId in (" + sms.getGroupIds() + ")";
+//        }
+        if (EHCacheUtil.<Boolean>getValue("userGroupPush", user.getUsername())) {
+            String groups = EHCacheUtil.<String>getValue("userGroups", user.getUsername());
+            sql = sql + " and sms_GroupId in (" + (isBlank(groups) ? getPushGroupsStr(user) : groups) + ")";
         }
 
-        if(isNotBlank(sms.getGroupIds())){
-            sql = sql + " and sms_GroupId in ("+sms.getGroupIds()+")";
-        }
+        sql = sql + " order by sms_time asc ";
 
-        sql = sql + " order by sms_time desc ";
+        System.out.println("===========sql:" + sql);
+
         List<Sms> list = getJdbcTemplate().query(sql,
                 new RowMapper<Sms>() {
                     @Override
@@ -98,39 +108,38 @@ public class SmsRepository extends JdbcDaoSupport {
 
         int day = 0;
         String ts = "";
-        if(sms.getTime()!=null){
+        if (sms.getTime() != null) {
             cal.setTime(sms.getTime());
             day = cal.get(Calendar.DAY_OF_YEAR);
             ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(sms.getTime());
         }
 
-        if(day != today){
+        if (day != today) {
 
 
             String sql = " select sms_id,sms_message,sms_time,sms_GroupId from ET_sms with (NOLOCK)  " +
                     " where sms_GroupId > 0 and sms_phone='" + user.getUsername() + "'";
 
             Calendar cal2 = Calendar.getInstance();
-            cal2.add(Calendar.DAY_OF_YEAR,-6);
+            cal2.add(Calendar.DAY_OF_YEAR, -6);
             String sevenDayStr = sdf.format(cal2.getTime());
             String sql2 = " select sms_id,sms_message,sms_time,sms_GroupId from Et_Sms_Backup with (NOLOCK)  " +
-                    " where sms_phone='" + user.getUsername() + "' and sms_time>='"+sevenDayStr+"' ";
+                    " where sms_phone='" + user.getUsername() + "' and sms_time>='" + sevenDayStr + "' ";
 
-            if(sms.getTime()!=null){
-                sql = sql + " and sms_time >= '"+ts+"' ";
-                sql2 = sql2 + " and sms_time >= '"+ts+"' ";
+            if (sms.getTime() != null) {
+                sql = sql + " and sms_time >= '" + ts + "' ";
+                sql2 = sql2 + " and sms_time >= '" + ts + "' ";
             }
 
-            if(isNotBlank(sms.getGroupIds())){
-                sql = sql + " and sms_GroupId in ("+sms.getGroupIds()+") ";
-                sql2 = sql2 + " and sms_GroupId in ("+sms.getGroupIds()+") ";
+            if (isNotBlank(sms.getGroupIds())) {
+                sql = sql + " and sms_GroupId in (" + sms.getGroupIds() + ") ";
+                sql2 = sql2 + " and sms_GroupId in (" + sms.getGroupIds() + ") ";
             }
-            sql = "select * from (" + sql + " union " +sql2 + ") a ";
-            sql = sql + " order by sms_time desc ";
+            sql = "select * from (" + sql + " union " + sql2 + ") a ";
+            sql = sql + " order by sms_time asc ";
 
-            System.out.println("===========:"+sql);
 
-            return getJdbcTemplate().query(sql,new RowMapper<Sms>() {
+            return getJdbcTemplate().query(sql, new RowMapper<Sms>() {
                 @Override
                 public Sms mapRow(ResultSet rs, int i) throws SQLException {
                     Sms sms = new Sms(
@@ -146,16 +155,16 @@ public class SmsRepository extends JdbcDaoSupport {
         } else {
             String sql3 = " select sms_id,sms_message,sms_time,sms_GroupId from ET_sms with (NOLOCK)  " +
                     " where sms_GroupId > 0 and sms_phone='" + user.getUsername() + "'";
-            if(sms.getTime()!=null){
-                sql3 = sql3 + " and sms_time >= '"+ts+"' ";
+            if (sms.getTime() != null) {
+                sql3 = sql3 + " and sms_time >= '" + ts + "' ";
             }
 
-            if(isNotBlank(sms.getGroupIds())){
-                sql3 = sql3 + " and sms_GroupId in ("+sms.getGroupIds()+") ";
+            if (isNotBlank(sms.getGroupIds())) {
+                sql3 = sql3 + " and sms_GroupId in (" + sms.getGroupIds() + ") ";
             }
-            sql3 = sql3 + " order by sms_time desc ";
+            sql3 = sql3 + " order by sms_time asc ";
 
-            return getJdbcTemplate().query(sql3,new RowMapper<Sms>() {
+            return getJdbcTemplate().query(sql3, new RowMapper<Sms>() {
                 @Override
                 public Sms mapRow(ResultSet rs, int i) throws SQLException {
                     Sms sms = new Sms(
@@ -172,7 +181,25 @@ public class SmsRepository extends JdbcDaoSupport {
     }
 
     public List<Group> getCategories(User user) {
+
+        EHCacheUtil.<String>setValue("userGroups", user.getUsername(), getPushGroupsStr(user));
+
         String sql = " select sendList_GroupID,SendList_Push from LZ_SMSSendList where sendList_mobile='" + user.getUsername() + "'";
+        return getJdbcTemplate().query(sql, new RowMapper<Group>() {
+            @Override
+            public Group mapRow(ResultSet rs, int i) throws SQLException {
+                Group group = new Group(
+                        rs.getInt("sendList_GroupID"),
+                        rs.getInt("SendList_Push")
+                );
+                return group;
+            }
+        });
+    }
+
+    public List<Group> getPushGroups(User user) {
+        String sql = " select sendList_GroupID,SendList_Push from LZ_SMSSendList " +
+                " where sendList_mobile='" + user.getUsername() + "' and SendList_Push=1";
 
         return getJdbcTemplate().query(sql, new RowMapper<Group>() {
             @Override
@@ -186,12 +213,71 @@ public class SmsRepository extends JdbcDaoSupport {
         });
     }
 
+    public List<Group> getAllGroups(User user) {
+        String sql = " select sendList_GroupID,SendList_Push from LZ_SMSSendList " +
+                " where sendList_mobile='" + user.getUsername() + "' ";
+
+        return getJdbcTemplate().query(sql, new RowMapper<Group>() {
+            @Override
+            public Group mapRow(ResultSet rs, int i) throws SQLException {
+                Group group = new Group(
+                        rs.getInt("sendList_GroupID"),
+                        rs.getInt("SendList_Push")
+                );
+                return group;
+            }
+        });
+    }
+
+    public String getPushGroupsStr(User user) {
+        List<Group> list = getAllGroups(user);
+        String groups = "";
+
+        if (list == null || list.isEmpty()) {
+            return global_groups;
+        }
+
+        Boolean isNotAllPush = false;
+        for (int i = 0; i < list.size(); i++) {
+
+            if (list.get(i).getPush().equals(1)) {
+                if (groups.equals("")) {
+                    groups = list.get(i).getGroupId();
+                } else {
+                    groups = groups + "," + list.get(i).getGroupId();
+                }
+            }
+
+            if (list.get(i).getPush().equals(0)) {
+                isNotAllPush = true;
+            }
+        }
+
+        EHCacheUtil.<Boolean>setValue("userGroupPush", user.getUsername(), isNotAllPush);
+        if (isBlank(groups)) {
+            return global_groups;
+        } else {
+            groups = isBlank(global_groups) ? groups : groups + "," + global_groups;
+            return groups;
+        }
+    }
+
+    public boolean isAllPush(User user) {
+        String sql = " select count(*) where sendList_mobile='" + user.getUsername() + "' and SendList_Push=0";
+        return getJdbcTemplate().queryForInt(sql) <= 0;
+    }
+
+
     public int updateCategories(User user, Group group) {
 
         String sql = " update LZ_SMSSendList set SendList_Push='" + group.getAllowPush() + "'" +
-                " where sendList_mobile='" + user.getUsername() + "' and sendList_GroupID= "+group.getGroupId();
+                " where sendList_mobile='" + user.getUsername() + "' and sendList_GroupID= " + group.getGroupId();
 
-        return getJdbcTemplate().update(sql);
+        int ret = getJdbcTemplate().update(sql);
+
+        EHCacheUtil.<String>setValue("userGroups", user.getUsername(), getPushGroupsStr(user));
+
+        return ret;
     }
 
 
@@ -201,21 +287,21 @@ public class SmsRepository extends JdbcDaoSupport {
         Calendar cal = Calendar.getInstance();
         Calendar cal2 = Calendar.getInstance();
 
-        cal.add(Calendar.DAY_OF_YEAR,-3);
-        cal2.add(Calendar.MONTH,-1);
+        cal.add(Calendar.DAY_OF_YEAR, -3);
+        cal2.add(Calendar.MONTH, -1);
 
         String day = sdf.format(cal.getTime());
         String monthDay = sdf.format(cal2.getTime());
 
-        String sql = " select top "+ pageSizeWhileSearchingLocalSMS+" sendMsg_ID,sendMsg_content,sendMsg_AddTime,sendMsg_GroupID " +
+        String sql = " select top " + pageSizeWhileSearchingLocalSMS + " sendMsg_ID,sendMsg_content,sendMsg_AddTime,sendMsg_GroupID " +
                 " from ET_SMS_SendMsg with (NOLOCK)  where sendMsg_GroupID is not null " +
-                "and sendMsg_AddTime < '"+day+"' and sendMsg_AddTime > '"+monthDay+"' ";
-        if(isNotBlank(key)){
-            sql = sql + " and sendMsg_content like '%"+key+"%' ";
+                "and sendMsg_AddTime < '" + day + "' and sendMsg_AddTime > '" + monthDay + "' ";
+        if (isNotBlank(key)) {
+            sql = sql + " and sendMsg_content like '%" + key + "%' ";
         }
         sql = sql + " order by sendMsg_AddTime desc ";
 
-        return getJdbcTemplate().query(sql,new RowMapper<Sms>() {
+        return getJdbcTemplate().query(sql, new RowMapper<Sms>() {
             @Override
             public Sms mapRow(ResultSet rs, int i) throws SQLException {
                 Sms sms = new Sms();

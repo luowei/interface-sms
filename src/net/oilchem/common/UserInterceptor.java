@@ -2,7 +2,7 @@ package net.oilchem.common;
 
 import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.common.utils.EHCacheUtil;
-import net.oilchem.common.utils.JiamiJiemi;
+import net.oilchem.sms.SmsRepository;
 import net.oilchem.user.User;
 import net.oilchem.user.UserRepository;
 import org.springframework.web.method.HandlerMethod;
@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Calendar;
 
+import static java.util.UUID.randomUUID;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -30,6 +30,13 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
     @Resource
     public void setUserRepository(UserRepository userRepository) {
         this.userRepository = userRepository;
+    }
+
+    private SmsRepository smsRepository;
+
+    @Resource
+    public void setSmsRepository(SmsRepository smsRepository){
+        this.smsRepository = smsRepository;
     }
 
     @Override
@@ -53,31 +60,37 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
                     return false;
                 }
 
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(JiamiJiemi.getJiemiDate(accessToken));
-                Calendar now = Calendar.getInstance();
-
-                //不是今天的码不让过
-                if(cal.get(Calendar.DAY_OF_YEAR) != now.get(Calendar.DAY_OF_YEAR)){
-                    request.getRequestDispatcher("/user/authFaild.do").forward(request, response);
-                    return false;
-                }
-                accessToken = JiamiJiemi.decode(accessToken);
-
                 //首从session里取用户信息
                 User user = EHCacheUtil.<User>getValue("smsUserCache", accessToken);
 
                 //首先根据令牌到数据库找
+                String token = null;
                 if (user == null) {
+
+                    //第一层验证
                     user = userRepository.findByAccessToken(accessToken);
                     if (request.getServletPath().contains("userLogout")) {
                         request.getRequestDispatcher("/user/userLogout.do").forward(request, response);
                         return false;
                     } else if (user == null) {
-                        request.getRequestDispatcher("/user/authFaild.do").forward(request, response);
-                        return false;
+
+
+                        //第二层验证
+                        user = userRepository.findByAccessTokenBak(accessToken);
+                        if (user != null) {
+                            token = randomUUID().toString().replace("-", "");
+                        } else {
+                            request.getRequestDispatcher("/user/authFaild.do").forward(request, response);
+                            return false;
+                        }
+
+                        EHCacheUtil.<String>setValue("userGroups", user.getUsername(), smsRepository.getPushGroupsStr(user));
+                    } else {
+                        userRepository.updateAccessTokenbak(accessToken);
+                        token = randomUUID().toString().replace("-", "");
                     }
-//                    token = randomUUID().toString().replace("-", "");
+
+
                 }
 
                 if (!(user.getStopClient().intValue() == 1 || user.getStopClient().intValue() == 2)) {
@@ -87,20 +100,21 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
                 }
 
                 if (isBlank(user.getAccessToken()) ||
-                        !user.getAccessToken().equals(accessToken)) {
+                        !(user.getAccessToken().equals(accessToken) || user.getAccessTokenbak().equals(accessToken)) ) {
                     request.getRequestDispatcher("/user/authFaild.do").forward(request, response);
                     return false;
                 }
 
                 //-----------
 //                user.setAccessToken(randomUUID().toString().replace("-", ""));
+////                userRepository.updateAccessTokenbakByUsername(user.getUsername());
 //                userRepository.updateToken(user);
 //                EHCacheUtil.setValue("smsUserCache", user.getAccessToken(), user);
 
                 //更新token
-                if (accessToken != null) {
-//                    user.setAccessToken(accessToken);
-//                    userRepository.updateToken(user);
+                if (token != null) {
+                    user.setAccessToken(token);
+                    userRepository.updateToken(user);
                     EHCacheUtil.setValue("smsUserCache", user.getAccessToken(), user);
                 }
 

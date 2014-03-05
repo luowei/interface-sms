@@ -80,7 +80,8 @@ public class UserRepository extends JdbcDaoSupport {
 
     public int updateLoginInfo(User user) {
         String sql = " update LZ_SMSUserMobile set User_accessToken= '" + user.getAccessToken() + "' , User_LastIP='" + user.getLastIp() +
-                "',User_IMEI='"+(user.getImei()==null?"":user.getImei())+"' , User_LastTime=GETDATE(),User_LoginTimes=User_LoginTimes+1, user_ViewTime=GETDATE()  " +
+                "',User_IMEI='"+(user.getImei()==null?"":user.getImei())+"' ," +
+                "  User_LastTime=GETDATE(),User_LoginTimes=User_LoginTimes+1, user_ViewTime=GETDATE()  ,User_accessTokenbak=null " +
                 " where user_mobile='" + user.getUsername() + "' ";
         return getJdbcTemplate().update(sql);
     }
@@ -124,6 +125,7 @@ public class UserRepository extends JdbcDaoSupport {
                         user.setImei(rs.getString("User_IMEI"));
                         user.setStopClient(rs.getInt("user_stopClient"));
                         user.setRealName(rs.getString("user_mobilelxr"));
+                        user.setAccessTokenbak(rs.getString("User_accessTokenbak"));
                         return user;
                     }
                 }
@@ -152,4 +154,47 @@ public class UserRepository extends JdbcDaoSupport {
     }
 
 
+    public User findByAccessTokenBak(String accessToken) {
+        final String token = accessToken;
+        List<User> users = getJdbcTemplate().query(
+                new PreparedStatementCreator() {
+                    @Override
+                    public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                        PreparedStatement pst = con.prepareStatement(
+                                " select * from LZ_SMSUserMobile where User_accessTokenbak=?  ");
+                        pst.setString(1, token);
+                        return pst;
+                    }
+                },
+                new RowMapper<User>() {
+                    @Override
+                    public User mapRow(ResultSet rs, int i) throws SQLException {
+                        User user = new User(
+                                rs.getInt("user_smsid"),
+                                rs.getString("user_mobile"),
+                                rs.getString("User_PWD"),
+                                rs.getString("User_accessToken"),
+                                rs.getString("User_LastIP"),
+                                rs.getTimestamp("User_LastTime"),
+                                rs.getInt("User_LoginTimes")
+                        );
+                        user.setImei(rs.getString("User_IMEI"));
+                        user.setStopClient(rs.getInt("user_stopClient"));
+                        user.setRealName(rs.getString("user_mobilelxr"));
+                        user.setAccessTokenbak(rs.getString("User_accessTokenbak"));
+                        return user;
+                    }
+                }
+        );
+        if (users.size() > 0) {
+            return users.get(0);
+        }
+        return null;
+    }
+
+    public int updateAccessTokenbak(String accessToken) {
+         String sql = " update LZ_SMSUserMobile set User_accessTokenbak=User_accessToken " +
+                 " where User_accessToken='"+accessToken+"' ";
+        return getJdbcTemplate().update(sql);
+    }
 }
