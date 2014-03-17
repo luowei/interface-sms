@@ -50,7 +50,7 @@ public class SmsRepository extends JdbcDaoSupport {
                 " where sms_GroupId > 0 and sms_phone='" + user.getUsername() + "' ";
 
         Calendar cal = Calendar.getInstance();
-        int today = cal.get(Calendar.DAY_OF_YEAR);
+        String today = new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime());
         int day = 0;
         String ts = "";
 
@@ -59,6 +59,8 @@ public class SmsRepository extends JdbcDaoSupport {
             day = cal.get(Calendar.DAY_OF_YEAR);
             ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(sms.getTime());
             sql = sql + " and sms_time > '" + ts + "'";
+        }else {
+            sql = sql + " and sms_time > '" + today + "'";
         }
 
 //        Calendar cal2 = Calendar.getInstance();
@@ -78,9 +80,7 @@ public class SmsRepository extends JdbcDaoSupport {
             sql = sql + " and sms_GroupId in (" + (isBlank(groups) ? getPushGroupsStr(user) : groups) + ")";
         }
 
-        sql = sql + " order by sms_time asc ";
-
-        System.out.println("===========sql:" + sql);
+        sql = sql + " order by sms_time desc ";
 
         List<Sms> list = getJdbcTemplate().query(sql,
                 new RowMapper<Sms>() {

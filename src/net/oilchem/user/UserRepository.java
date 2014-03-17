@@ -80,7 +80,15 @@ public class UserRepository extends JdbcDaoSupport {
 
     public int updateLoginInfo(User user) {
         String sql = " update LZ_SMSUserMobile set User_accessToken= '" + user.getAccessToken() + "' , User_LastIP='" + user.getLastIp() +
-                "',User_IMEI='"+(user.getImei()==null?"":user.getImei())+"' ," +
+                "',User_IMEI='" + (user.getImei() == null ? "" : user.getImei()) + "' ," +
+                "  User_LastTime=GETDATE(),User_LoginTimes=User_LoginTimes+1, user_ViewTime=GETDATE()  ,User_accessTokenbak=null " +
+                " where user_mobile='" + user.getUsername() + "' ";
+        return getJdbcTemplate().update(sql);
+    }
+
+    public int updateLoginInfo2(User user) {
+        String sql = " update LZ_SMSUserMobile set User_accessToken= '" + user.getAccessToken() + "' , User_LastIP='" + user.getLastIp() +
+                "',User_IMEI='" + (user.getImei() == null ? "" : user.getImei()) + "' ,User_IMEI_Count=User_IMEI_Count+1, " +
                 "  User_LastTime=GETDATE(),User_LoginTimes=User_LoginTimes+1, user_ViewTime=GETDATE()  ,User_accessTokenbak=null " +
                 " where user_mobile='" + user.getUsername() + "' ";
         return getJdbcTemplate().update(sql);
@@ -93,7 +101,7 @@ public class UserRepository extends JdbcDaoSupport {
     }
 
     public int updateToken(User user) {
-        String sql = " update LZ_SMSUserMobile set User_accessToken= '" +user.getAccessToken() + "'" +
+        String sql = " update LZ_SMSUserMobile set User_accessToken= '" + user.getAccessToken() + "'" +
                 " where user_mobile='" + user.getUsername() + "' ";
         return getJdbcTemplate().update(sql);
     }
@@ -137,19 +145,19 @@ public class UserRepository extends JdbcDaoSupport {
     }
 
     public int register(User user) {
-         String sql = " insert into LZ_SMSUSerMobileReg(user_mobile,user_ip,user_regTime)  " +
-                 " values('"+user.getUsername()+"','"+user.getLastIp()+"',GETDATE()) ";
+        String sql = " insert into LZ_SMSUSerMobileReg(user_mobile,user_ip,user_regTime)  " +
+                " values('" + user.getUsername() + "','" + user.getLastIp() + "',GETDATE()) ";
         return getJdbcTemplate().update(sql);
     }
 
     public int cleanAccessToken(User user) {
-        String sql = " update LZ_SMSUserMobile set User_accessToken='', user_ViewTime=GETDATE()-1 where user_mobile='"+user.getUsername()+"' ";
+        String sql = " update LZ_SMSUserMobile set User_accessToken='', user_ViewTime=GETDATE()-1 where user_mobile='" + user.getUsername() + "' ";
         return getJdbcTemplate().update(sql);
     }
 
     public boolean exsitUser(User user) {
-       String sql = " select count(*) from LZ_SMSUSerMobileReg where user_mobile='"+user.getUsername()+"' ";
-        String mobileSql = " select count(*) from LZ_SMSUserMobile where user_mobile='"+user.getUsername()+"' ";
+        String sql = " select count(*) from LZ_SMSUSerMobileReg where user_mobile='" + user.getUsername() + "' ";
+        String mobileSql = " select count(*) from LZ_SMSUserMobile where user_mobile='" + user.getUsername() + "' ";
         return getJdbcTemplate().queryForInt(sql) > 0 || getJdbcTemplate().queryForInt(mobileSql) > 0;
     }
 
@@ -193,8 +201,20 @@ public class UserRepository extends JdbcDaoSupport {
     }
 
     public int updateAccessTokenbak(String accessToken) {
-         String sql = " update LZ_SMSUserMobile set User_accessTokenbak=User_accessToken " +
-                 " where User_accessToken='"+accessToken+"' ";
+        String sql = " update LZ_SMSUserMobile set User_accessTokenbak=User_accessToken " +
+                " where User_accessToken='" + accessToken + "' ";
+        return getJdbcTemplate().update(sql);
+    }
+
+    public boolean exsitImei(User user) {
+        String sql = " select count(*) from Lz_SMSUserMobile_IMEI " +
+                " where user_mobile='" + user.getUsername() + "' and User_IMEI='" + user.getImei() + "' ";
+        return getJdbcTemplate().queryForInt(sql) > 0;
+    }
+
+    public int addImei(User user, String ipAddr) {
+        String sql = " insert into Lz_SMSUserMobile_IMEI(user_mobile,User_IMEI,addtime,addip) " +
+                " values('" + user.getUsername() + "','" + user.getImei() + "',getdate(),'" + ipAddr + "' ) ";
         return getJdbcTemplate().update(sql);
     }
 }

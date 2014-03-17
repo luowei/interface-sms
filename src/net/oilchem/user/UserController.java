@@ -104,7 +104,12 @@ public class UserController extends BaseController {
             user.setLastIp(getIpAddr(request));      //获得客户端ip
             EHCacheUtil.<User>setValue("smsUserCache", user.getAccessToken(), user);
 //            userRepository.updateAccessTokenbak(user.getAccessToken());
-            userRepository.updateLoginInfo(user);
+            if(userRepository.exsitImei(user)){
+                userRepository.updateLoginInfo(user);
+            }else {
+                userRepository.updateLoginInfo2(user);
+                userRepository.addImei(user,user.getLastIp());
+            }
             return format(json_format, "1", "",
                     "\"login\":\"1\",\"username\":\""+user.getRealName()+"\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
         }
