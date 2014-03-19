@@ -1,6 +1,8 @@
 package net.oilchem;
 
-import net.oilchem.common.utils.JiamiJiemi;
+import java.util.UUID;
+
+import static net.oilchem.common.utils.Md5Util.generatePassword;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,22 +30,31 @@ public class Test {
 //
 //        System.out.println(new SimpleDateFormat("yyyy-MM-dd").parse("2013-02-20").getTime());
 //
-        System.out.println(Character.toString((char) 65));
-        System.out.println(Character.toString((char) 97));
-        System.out.println(Character.toString((char) 48));
-        System.out.println(Character.toString((char) 57));
+
+//        ---------------------------------------------
+
+//        System.out.println(Character.toString((char) 65));
+//        System.out.println(Character.toString((char) 97));
+//        System.out.println(Character.toString((char) 48));
+//        System.out.println(Character.toString((char) 57));
+////
+////        System.out.println((int) 'Z');
 //
-//        System.out.println((int) 'Z');
+//        String in = "AKSZ0349aDYz";
+//        System.out.println(in);
+//        //加密
+//        String out = JiamiJiemi.encode(in);
+//        System.out.println(out);
+//        //解密
+//        in = JiamiJiemi.decode(out);
+//        System.out.println(in);
 
-        String in = "AKSZ0349aDYz";
-        System.out.println(in);
-        //加密
-        String out = JiamiJiemi.encode(in);
-        System.out.println(out);
-        //解密
-        in = JiamiJiemi.decode(out);
-        System.out.println(in);
 
+//        -------------------------------------------------
+
+        System.out.println(generatePassword("13233302958"));
+
+        System.out.println("============:"+ UUID.randomUUID().toString().replace("-",""));
     }
 
 
