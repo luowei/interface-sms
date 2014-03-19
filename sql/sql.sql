@@ -18,6 +18,6 @@ Update [pcdb].[dbo].[GuestBook_WapVerify] Set Verify_ExpireTime=DATEADD ( Hour ,
 --发送一条短信
 Insert expert.dbo.Et_Sms (sms_phone,sms_message,sms_seq,sms_title,sms_time,sms_fromuserid,sms_touserid,sms_sendResult,sms_msg_Type,sms_Amount,sms_sendType,sms_OnlyID,sms_ip,sms_admin,sms_sendList_id,sms_AccountID,sms_NeedStatus,sms_Priority,sms_Retry,sms_loginname,sms_toWhoName)
 
-  Values('13801808080','您在本站申请了注册验证码，确认码为：2942，隆众石化网http://www.oilchem.net',Null,'发送注册验证码'
+  Values('13801808080','您在本站申请了注册验证码，确认码为：2942',Null,'发送注册验证码'
          ,GetDate(),0,0,0,100,1,1,NULL,'192.168.1.76',NULL,NULL,'0',0,1,3,'系统','13801808080')
 
