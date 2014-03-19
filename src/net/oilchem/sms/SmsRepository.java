@@ -59,7 +59,7 @@ public class SmsRepository extends JdbcDaoSupport {
             day = cal.get(Calendar.DAY_OF_YEAR);
             ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(sms.getTime());
             sql = sql + " and sms_time > '" + ts + "'";
-        }else {
+        } else {
             sql = sql + " and sms_time > '" + today + "'";
         }
 
@@ -270,8 +270,15 @@ public class SmsRepository extends JdbcDaoSupport {
 
     public int updateCategories(User user, Group group) {
 
-        String sql = " update LZ_SMSSendList set SendList_Push='" + group.getAllowPush() + "'" +
-                " where sendList_mobile='" + user.getUsername() + "' and sendList_GroupID= " + group.getGroupId();
+        String sql = null;
+
+        if (group.getGroupId().equals("0") || group.getGroupId().equals("")) {
+            sql = " update LZ_SMSSendList set SendList_Push='" + group.getAllowPush() + "'" +
+                    " where sendList_mobile='" + user.getUsername() + "' ";
+        } else {
+            sql = " update LZ_SMSSendList set SendList_Push='" + group.getAllowPush() + "'" +
+                    " where sendList_mobile='" + user.getUsername() + "' and sendList_GroupID= " + group.getGroupId();
+        }
 
         int ret = getJdbcTemplate().update(sql);
 

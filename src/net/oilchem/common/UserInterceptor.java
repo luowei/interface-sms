@@ -40,12 +40,19 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
     }
 
     @Override
+    public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        super.afterConcurrentHandlingStarted(request, response, handler);
+    }
+
+    @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (!(handler instanceof HandlerMethod)) {
             return true;
         }
         Method method = ((HandlerMethod) handler).getMethod();
         boolean needLogin = hasLoginAnotation(method.getDeclaringClass(), method);
+
+
 
         //是否需要登录
         if (!needLogin) {
