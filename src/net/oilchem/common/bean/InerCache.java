@@ -89,5 +89,6 @@ public class InerCache {
 
     public static void clearCache() {
         inerCache = null;
+        System.gc();
     }
 }

@@ -184,7 +184,8 @@ public class SmsRepository extends JdbcDaoSupport {
 
         EHCacheUtil.<String>setValue("userGroups", user.getUsername(), getPushGroupsStr(user));
 
-        String sql = " select sendList_GroupID,SendList_Push from LZ_SMSSendList where sendList_mobile='" + user.getUsername() + "'";
+        String sql = " select sendList_GroupID,SendList_Push from LZ_SMSSendList " +
+                "where sendList_isRecv = 1 and sendList_mobile='" + user.getUsername() + "'";
         return getJdbcTemplate().query(sql, new RowMapper<Group>() {
             @Override
             public Group mapRow(ResultSet rs, int i) throws SQLException {

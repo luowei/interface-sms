@@ -19,7 +19,7 @@ public class EHCacheUtil {
 
     public static int MAXELEMENTSINMEMORY = 300000;
 
-    public static Cache initCache(String cacheName) {
+    public synchronized static Cache initCache(String cacheName) {
         try {
             CacheManager myManager = CacheManager.create();
             Cache myCache = myManager.getCache(cacheName);
