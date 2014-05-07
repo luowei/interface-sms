@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static net.oilchem.common.bean.Config.*;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 
 /**
@@ -134,6 +135,42 @@ public class SmsController extends BaseController {
 
         dataMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
 
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(dataMap);
+        return ret;
+    }
+
+    @ResponseBody
+    @RequestMapping("/getReplies")
+    public JsonRet<Map> getReplies(String accessToken,String id,HttpServletRequest request){
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+
+        Map dataMap = new HashMap();
+
+        List<Reply> replies = smsRepository.getReplies(id, user);
+        dataMap.put("replies", replies);
+
+        dataMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
+
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(dataMap);
+        return ret;
+    }
+
+    @ResponseBody
+    @RequestMapping("/pushReply")
+    public JsonRet<Map> pushReply(String accessToken,Reply reply,HttpServletRequest request){
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+        if(isBlank(reply.getUsername())){
+            reply.setUsername(user.getUsername());
+        }
+        Map dataMap = new HashMap();
+        Reply re = smsRepository.pushReply(reply);
+
+        dataMap.put("reply",re);
+        dataMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(dataMap);
         return ret;

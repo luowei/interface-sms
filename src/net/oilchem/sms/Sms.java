@@ -17,11 +17,12 @@ import static org.apache.commons.lang3.StringUtils.isNumeric;
  * Time: 下午5:09
  * To change this template use File | Settings | File Templates.
  */
-@JsonPropertyOrder({"groupId", "ts","title", "content" })
+@JsonPropertyOrder({"msgId","groupId", "ts","title", "content","replies" })
 public class Sms implements Serializable {
 
     Integer id;
     String smsId;
+    String msgId;
 
     String title;
 
@@ -34,6 +35,9 @@ public class Sms implements Serializable {
     String groupId;
     String groupIds;
     String groupName;
+
+    String replies="";
+
 
     public Sms() {
     }
@@ -154,5 +158,21 @@ public class Sms implements Serializable {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public void setMsgId(String msgId) {
+        this.msgId = msgId;
+    }
+
+    public String getMsgId() {
+        return msgId;
+    }
+
+    public String getReplies() {
+        return replies;
+    }
+
+    public void setReplies(String replies) {
+        this.replies = replies;
     }
 }

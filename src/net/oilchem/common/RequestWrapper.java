@@ -17,7 +17,7 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
     public String[] getParameterValues(String parameter) {
 
-        System.out.println("Trimming parameters...");
+//        System.out.println("Trimming parameters...");
         String[] results = super.getParameterValues(parameter);
 
         if (results == null) {

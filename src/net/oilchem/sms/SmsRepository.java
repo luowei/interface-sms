@@ -13,8 +13,10 @@ import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import static net.oilchem.common.bean.Config.global_groups;
@@ -46,7 +48,7 @@ public class SmsRepository extends JdbcDaoSupport {
 
     public List<Sms> getPushSMS(User user, Sms sms) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String sql = " select  sms_id,sms_time,sms_message,sms_GroupId from ET_sms with (NOLOCK)  " +
+        String sql = " select  sms_id,sms_sendMsg_ID,sms_time,sms_message,sms_GroupId from ET_sms with (NOLOCK)  " +
                 " where sms_GroupId > 0 and sms_phone='" + user.getUsername() + "' ";
 
         Calendar cal = Calendar.getInstance();
@@ -92,9 +94,11 @@ public class SmsRepository extends JdbcDaoSupport {
                                 rs.getString("sms_message"),
                                 rs.getInt("sms_GroupId")
                         );
+                        sms.setMsgId(String.valueOf(rs.getInt("sms_sendMsg_ID")));
                         return sms;
                     }
-                });
+                }
+        );
 
         return list;
     }
@@ -117,13 +121,13 @@ public class SmsRepository extends JdbcDaoSupport {
         if (day != today) {
 
 
-            String sql = " select sms_id,sms_message,sms_time,sms_GroupId from ET_sms with (NOLOCK)  " +
+            String sql = " select sms_id,sms_sendMsg_ID,sms_message,sms_time,sms_GroupId from ET_sms with (NOLOCK)  " +
                     " where sms_GroupId > 0 and sms_phone='" + user.getUsername() + "'";
 
             Calendar cal2 = Calendar.getInstance();
             cal2.add(Calendar.DAY_OF_YEAR, -6);
             String sevenDayStr = sdf.format(cal2.getTime());
-            String sql2 = " select sms_id,sms_message,sms_time,sms_GroupId from Et_Sms_Backup with (NOLOCK)  " +
+            String sql2 = " select sms_id,sms_sendMsg_ID,sms_message,sms_time,sms_GroupId from Et_Sms_Backup with (NOLOCK)  " +
                     " where sms_phone='" + user.getUsername() + "' and sms_time>='" + sevenDayStr + "' ";
 
             if (sms.getTime() != null) {
@@ -148,12 +152,13 @@ public class SmsRepository extends JdbcDaoSupport {
                             rs.getString("sms_message"),
                             rs.getInt("sms_GroupId")
                     );
+                    sms.setMsgId(String.valueOf(rs.getInt("sms_sendMsg_ID")));
                     return sms;
                 }
             });
 
         } else {
-            String sql3 = " select sms_id,sms_message,sms_time,sms_GroupId from ET_sms with (NOLOCK)  " +
+            String sql3 = " select sms_id,sms_sendMsg_ID,sms_message,sms_time,sms_GroupId from ET_sms with (NOLOCK)  " +
                     " where sms_GroupId > 0 and sms_phone='" + user.getUsername() + "'";
             if (sms.getTime() != null) {
                 sql3 = sql3 + " and sms_time >= '" + ts + "' ";
@@ -173,6 +178,7 @@ public class SmsRepository extends JdbcDaoSupport {
                             rs.getString("sms_message"),
                             rs.getInt("sms_GroupId")
                     );
+                    sms.setMsgId(String.valueOf(rs.getInt("sms_sendMsg_ID")));
                     return sms;
                 }
             });
@@ -313,11 +319,39 @@ public class SmsRepository extends JdbcDaoSupport {
             @Override
             public Sms mapRow(ResultSet rs, int i) throws SQLException {
                 Sms sms = new Sms();
-                sms.setId(rs.getInt("sendMsg_ID"));
+                sms.setMsgId(String.valueOf(rs.getInt("sendMsg_ID")));
                 sms.setContent(rs.getString("sendMsg_content"));
                 sms.setTime(rs.getTimestamp("sendMsg_AddTime"));
                 return sms;
             }
         });
+    }
+
+    public List<Reply> getReplies(String msgId, User user) {
+        String sql = " select * from ET_sms_reply where msgId=" + msgId + " and username='" + user.getUsername() + "'";
+        return getJdbcTemplate().query(sql, new RowMapper<Reply>() {
+            @Override
+            public Reply mapRow(ResultSet rs, int i) throws SQLException {
+                Reply reply = new Reply(
+                        String.valueOf(rs.getInt("id")),
+                        String.valueOf(rs.getInt("msgId")),
+                        rs.getString("username"),
+                        rs.getString("reply")
+                );
+                Timestamp time = rs.getTimestamp("replyTime");
+                reply.setReplyTime(String.valueOf(time.getTime()));
+                return reply;
+            }
+        });
+    }
+
+    public Reply pushReply(Reply reply) {
+        Date time = new Date();
+        String replyTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(time);
+        String sql = " insert into ET_sms_reply(msgId,username,reply,replyTime)" +
+                " values("+reply.getMsgId()+",'"+reply.getUsername()+"','"+reply.getReply()+"','"+replyTime+"') ";
+        getJdbcTemplate().update(sql);
+        reply.setReplyTime(String.valueOf(time.getTime()));
+        return reply;
     }
 }
