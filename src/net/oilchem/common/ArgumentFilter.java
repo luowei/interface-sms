@@ -20,6 +20,7 @@ public class ArgumentFilter  implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
                          FilterChain filterChain) throws IOException, ServletException {
         filterChain.doFilter(new RequestWrapper( (HttpServletRequest)servletRequest ), servletResponse);
+        return;
     }
 
     @Override

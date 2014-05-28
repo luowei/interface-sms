@@ -91,12 +91,15 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
                             return false;
                         }
 
-                        EHCacheUtil.<String>setValue("userGroups", user.getUsername(), smsRepository.getPushGroupsStr(user));
+//                        EHCacheUtil.<String>setValue("userGroups", user.getUsername(), smsRepository.getPushGroupsStr(user));
                     } else {
                         userRepository.updateAccessTokenbak(accessToken);
                         token = randomUUID().toString().replace("-", "");
                     }
 
+                    if(request.getRequestURI().equals("/sms/getPushSMS.do")) {
+                        EHCacheUtil.<String>setValue("userGroups", user.getUsername(), smsRepository.getPushGroupsStr(user));
+                    }
 
                 }
 
@@ -125,7 +128,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
                     EHCacheUtil.setValue("smsUserCache", user.getAccessToken(), user);
                 }
 
-//            userRepository.updateLoginInfo(user);
+//              userRepository.updateLoginInfo(user);
                 userRepository.updateViewtime(user);
                 request.setAttribute("accessToken", user.getAccessToken());
                 return true;

@@ -77,7 +77,8 @@ public class SmsRepository extends JdbcDaoSupport {
 //        if (isNotBlank(sms.getGroupIds())) {
 //            sql = sql + " and sms_GroupId in (" + sms.getGroupIds() + ")";
 //        }
-        if (EHCacheUtil.<Boolean>getValue("userGroupPush", user.getUsername())) {
+        Boolean hasPushGroups = EHCacheUtil.<Boolean>getValue("userGroupPush", user.getUsername());
+        if (hasPushGroups!=null && hasPushGroups) {
             String groups = EHCacheUtil.<String>getValue("userGroups", user.getUsername());
             sql = sql + " and sms_GroupId in (" + (isBlank(groups) ? getPushGroupsStr(user) : groups) + ")";
         }
@@ -351,6 +352,9 @@ public class SmsRepository extends JdbcDaoSupport {
         String sql = " insert into ET_sms_reply(msgId,username,reply,replyTime)" +
                 " values("+reply.getMsgId()+",'"+reply.getUsername()+"','"+reply.getReply()+"','"+replyTime+"') ";
         getJdbcTemplate().update(sql);
+        String msgSql = " update ET_SMS_SendMsg set sendMsg_replyCount=sendMsg_replyCount+1,sendMsg_lastReplyTime=GETDATE() " +
+                " where sendMsg_ID="+reply.getMsgId();
+        getJdbcTemplate().update(msgSql);
         reply.setReplyTime(String.valueOf(time.getTime()));
         return reply;
     }
