@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>短讯通客户端接口</title>
+    <link rel="stylesheet" href="base.css" />
+</head>
+<body><div class="container"><h2 id="短讯通客户端接口">短讯通客户端接口</h2>
+
+<p><strong>说明:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">$</span><span class="pun">{</span><span class="pln">domain</span><span class="pun">}=</span><span class="pln">http</span><span class="pun">:</span><span class="com">//android.oilchem.net;应用根路径</span><span class="pln">
+$</span><span class="pun">{</span><span class="pln">accessToken</span><span class="pun">}=</span><span class="pln">accessToken</span><span class="pun">;令牌</span><span class="pln">
+stat</span><span class="pun">：结果状态码,</span><span class="lit">1</span><span class="pun">表示成功，</span><span class="lit">0</span><span class="pun">表示失败</span><span class="pln">
+error</span><span class="pun">：</span><span class="pln">stat</span><span class="pun">为</span><span class="lit">0</span><span class="pun">时，提供错误信息</span><span class="pln">
+data</span><span class="pun">：数据内容</span></code></pre>
+
+<h3 id="用户登录">用户登录</h3>
+
+<p><strong>url:</strong> <code>${domain}/user/userLogin.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">username</span><span class="pun">：用户名</span><span class="pln">
+password</span><span class="pun">：</span><span class="pln">md5</span><span class="pun">后的密码</span><span class="pln">
+imei</span><span class="pun">：设备唯一标识码</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">1</span><span class="pun">,</span><span class="pln"> </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln"> </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"login"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="com">//0: 登录失败  1: 登录成功</span><span class="pln">
+    </span><span class="str">"username"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"张三"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//用户实名</span><span class="pln">
+    </span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"登录成功"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//如果登录失败则返回失败原因</span><span class="pln">
+    </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1b4df9c2a9b14e7e92438aa56f7c43ed"</span><span class="pln"> </span><span class="com">//返回的令牌</span><span class="pln">
+</span><span class="pun">}</span><span class="pln"> </span><span class="pun">}</span></code></pre>
+
+<hr>
+
+<h3 id="用户注册">用户注册</h3>
+
+<p><em>注册，请求验证码只支持 <strong>Post</strong> 方式; 在本Request之前，需要通过手机获取一个验证码</em></p>
+
+<h4 id="请求手机验证码">请求手机验证码</h4>
+
+<p><strong>请求地址:</strong> </p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">http</span><span class="pun">:</span><span class="com">//www.oilchem.net/reg/getcode/?clientid=UserName&amp;UserName=${用户手机号码}</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="str">"getcode"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0"</span><span class="pun">,</span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"请输入正确的手机号"</span><span class="pun">}}</span><span class="pln"> 
+</span><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="str">"getcode"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0"</span><span class="pun">,</span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"手机号码已经被其他人注册！"</span><span class="pun">}}</span><span class="pln"> 
+</span><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="str">"getcode"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"确认码已经发送到13000000012，请稍候查收。"</span><span class="pun">}}</span></code></pre>
+
+<p><strong>示例如图：</strong> <br>
+    <img src="http://android.oilchem.net/api/aa.png" alt="demo" title=""></p>
+
+<h4 id="注册">注册</h4>
+
+<p><strong>url:</strong> <code>http://www.oilchem.net/reg/?action=android</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="typ">UserName</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户手机号码</span><span class="pln">
+vkey</span><span class="pun">:</span><span class="pln"> </span><span class="pun">验证码，用于防止恶意注册</span><span class="pln">
+</span><span class="typ">PassWord</span><span class="pun">:</span><span class="pln"> </span><span class="pun">密码</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="str">"register"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0"</span><span class="pun">,</span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"请输入正确的手机号"</span><span class="pun">}}</span><span class="pln"> 
+</span><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="str">"register"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0"</span><span class="pun">,</span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"注册确认码输入错误！"</span><span class="pun">}}</span><span class="pln"> 
+</span><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="str">"register"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0"</span><span class="pun">,</span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"手机已经注册短讯用户！"</span><span class="pun">}}</span><span class="pln"> 
+</span><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="str">"register"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"注册成功。请等待客服联系，为您开通功能。"</span><span class="pun">}}</span></code></pre>
+
+<hr>
+
+<h3 id="检查更新">检查更新</h3>
+
+<p><strong>url:</strong> <code>${domain}/user/updateApp.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">version</span><span class="pun">:</span><span class="pln"> </span><span class="pun">当前应用版本号(如：</span><span class="lit">1.0</span><span class="pun">)</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"update"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//0: 不需要更新  1: 需要更新</span><span class="pln">
+        </span><span class="str">"downloadUrl"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"http://www.oilchem.net/download/android/sms.apk"</span><span class="pln"> </span><span class="com">//如果update为0,则不需要更新,这里返回空即可.</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<hr>
+
+<h3 id="注销用户登录">注销用户登录</h3>
+
+<p><strong>url:</strong> <code>${domain}/user/userLogout.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">username</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户名</span><span class="pln">
+accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"logout"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pln"> </span><span class="com">//0: 注销失败  1: 注销成功(前端移除用户的accessToken)</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<hr>
+
+<h3 id="获得配置信息">获得配置信息</h3>
+
+<p><em>用户每次打开应用均需要同步服务器的config状态</em></p>
+
+<p><strong>url:</strong> <code>${domain}/sms/getConfig.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="str">"a3ab8d5f2d2041709954490d323c044a"</span><span class="pun">,</span><span class="com">//当前最新的令牌</span><span class="pln">
+        </span><span class="str">"config"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"categories"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln"> </span><span class="com">//用户订阅的分类以及是否接收推送信息</span><span class="pln">
+                </span><span class="pun">{</span><span class="pln">
+                    </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln">
+                    </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//分类名称</span><span class="pln">
+                    </span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pln"> </span><span class="com">//0:不接收push, 1:接收push</span><span class="pln">
+                </span><span class="pun">},</span><span class="pln">
+                </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">},</span><span class="pln">
+                </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">},</span><span class="pln">
+                </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">},</span><span class="pln">
+                </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">}</span><span class="pln">
+            </span><span class="pun">],</span><span class="pln">
+            </span><span class="str">"customerServicename"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"隆众客服"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"customerServiceNumber"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"0533-2591688"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"pageSizeWhileSearchingLocalSMS"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"10"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"latestAppVersion"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1.0"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//如果此版本大于本地版本，则跳出提示框来通过appDownload地址升级</span><span class="pln">
+            </span><span class="str">"appDownload"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"http://www.oilchem.net/download/android/sms.apk"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"getPushTimeInterval"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"30"</span><span class="pln"> </span><span class="com">//获取push内容的轮询请求时间间隔 ,30指的是30秒</span><span class="pln">
+        </span><span class="pun">}</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<hr>
+
+<h3 id="获取短讯组">获取短讯组</h3>
+
+<p><strong>url:</strong> <code>${domain}/sms/getCategories.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="str">"a3ab8d5f2d2041709954490d323c044a"</span><span class="pun">,</span><span class="com">//当前最新的令牌</span><span class="pln">
+        </span><span class="str">"categories"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln"> </span><span class="com">//用户订阅的分类以及是否接收推送信息</span><span class="pln">
+            </span><span class="pun">{</span><span class="pln">
+                </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln">
+                </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//分类名称</span><span class="pln">
+                </span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pln"> </span><span class="com">//0:不接收push, 1:接收push</span><span class="pln">
+            </span><span class="pun">},</span><span class="pln">
+            </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">},</span><span class="pln">
+            </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">},</span><span class="pln">
+            </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">},</span><span class="pln">
+            </span><span class="pun">{</span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">}</span><span class="pln">
+        </span><span class="pun">]</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<hr>
+
+<h3 id="获取最新信息">获取最新信息</h3>
+
+<p><strong>url:</strong> <code>${domain}/sms/getMessages.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span><span class="pln">
+ts</span><span class="pun">:</span><span class="pln"> </span><span class="pun">记录最后一次获取信息的时间戳</span><span class="pln">
+      </span><span class="lit">1</span><span class="pln"> </span><span class="pun">为空时,</span><span class="pln"> </span><span class="pun">说明是第一次取信息,</span><span class="pln"> </span><span class="pun">则返回最进</span><span class="lit">7</span><span class="pun">天的所有短讯</span><span class="pln">
+      </span><span class="lit">2</span><span class="pln"> </span><span class="pun">为</span><span class="lit">1323308943</span><span class="pun">时,</span><span class="pln"> </span><span class="pun">返回大于此时间戳的所有短讯</span><span class="pln">
+      </span><span class="lit">3</span><span class="pln"> </span><span class="pun">为</span><span class="lit">1323308943</span><span class="pun">时,</span><span class="pln"> </span><span class="pun">当前时间和此</span><span class="pln">ts</span><span class="pun">的差大于</span><span class="lit">7</span><span class="pun">天,</span><span class="pln"> </span><span class="pun">则认为</span><span class="pln">ts</span><span class="pun">为空</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln"> </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"94e8abedd5874263a89e30f2ade59c4b"</span><span class="pun">,</span><span class="com">//当前最新的令牌</span><span class="pln">
+    </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1406096718367"</span><span class="pun">,</span><span class="com">//本次请求的服务器时间戳</span><span class="pln">
+    </span><span class="str">"messages"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1064816"</span><span class="pun">,</span><span class="com">//信息Id，客户回复信息时要传给服务器</span><span class="pln">
+            </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"5659"</span><span class="pun">,</span><span class="com">//信息组Id</span><span class="pln">
+            </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1399132800000"</span><span class="pun">,</span><span class="com">//信息时间</span><span class="pln">
+            </span><span class="str">"title"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"dsafasdaa"</span><span class="pun">,</span><span class="com">//信息标题</span><span class="pln">
+            </span><span class="str">"content"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"dsafasdaaabc的风格惺惺惜adfad惺惺笑嘻嘻"</span><span class="pun">,</span><span class="com">//信息内容</span><span class="pln">
+            </span><span class="str">"replies"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="com">//回复内容字段,客户端需本地保存,服务端默认返回空内容</span><span class="pln">
+            </span><span class="str">"groupName"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"正式"</span><span class="com">//信息组名</span><span class="pln">
+        </span><span class="pun">},</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1064815"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"5659"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1399132800000"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"title"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"拉萨市夺aaaaaa的风"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"content"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"拉萨市夺abc的风格aaaaaaaaaaaa"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"replies"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupName"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"正式"</span><span class="pln">
+        </span><span class="pun">}</span><span class="pln">
+    </span><span class="pun">]</span><span class="pln">
+</span><span class="pun">}}</span></code></pre>
+
+<hr>
+
+<h3 id="获取推送信息">获取推送信息</h3>
+
+<p><strong>url:</strong> <code>${domain}/sms/getPushSMS.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span><span class="pln">
+groupIds</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户接收推送的短讯类别</span><span class="pln">ID</span><span class="pun">号,多个以</span><span class="str">","</span><span class="pun">分隔,如</span><span class="pln">groupIds</span><span class="pun">=</span><span class="lit">123</span><span class="pun">,</span><span class="lit">234</span><span class="pun">,</span><span class="lit">45</span><span class="pun">,</span><span class="lit">65</span><span class="pun">,</span><span class="lit">75</span><span class="pun">,</span><span class="lit">7</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln"> </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"94e8abedd5874263a89e30f2ade59c4b"</span><span class="pun">,</span><span class="com">//当前最新的令牌</span><span class="pln">
+    </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1406097990518"</span><span class="pun">,</span><span class="com">//本次请求的服务器时间戳</span><span class="pln">
+    </span><span class="str">"messages"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1064921"</span><span class="pun">,</span><span class="com">//信息Id，客户回复信息时要传给服务器</span><span class="pln">
+            </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"3730"</span><span class="pun">,</span><span class="com">//信息组Id</span><span class="pln">
+            </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1406097957797"</span><span class="pun">,</span><span class="com">//信息时间</span><span class="pln">
+            </span><span class="str">"title"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"新消息......"</span><span class="pun">,</span><span class="com">//信息标题</span><span class="pln">
+            </span><span class="str">"content"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"新消息........"</span><span class="pun">,</span><span class="com">//信息内容</span><span class="pln">
+            </span><span class="str">"replies"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="com">//回复内容字段,客户端需本地保存,服务端默认返回空内容</span><span class="pln">
+            </span><span class="str">"groupName"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"异戊二烯"</span><span class="com">//信息组名</span><span class="pln">
+        </span><span class="pun">},</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1064920"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"3730"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1406097919563"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"title"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"content"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"新消息。。。。"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"replies"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupName"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"异戊二烯"</span><span class="pln">
+        </span><span class="pun">}</span><span class="pln">
+    </span><span class="pun">]</span><span class="pln">
+</span><span class="pun">}}</span></code></pre>
+
+<hr>
+
+<h3 id="更改信息组推送状态">更改信息组推送状态</h3>
+
+<p><strong>url:</strong> <code>${domain}/sms/changePushStat.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">categoryName</span><span class="pun">:</span><span class="pln"> </span><span class="pun">类别名称</span><span class="pln">
+allowPush</span><span class="pun">:</span><span class="pln"> </span><span class="pun">本类别是否接收推送信息,</span><span class="lit">0</span><span class="pun">:</span><span class="pln"> </span><span class="pun">不接收</span><span class="pln"> </span><span class="lit">1</span><span class="pun">:</span><span class="pln"> </span><span class="pun">接收</span><span class="pln">
+accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="str">"a3ab8d5f2d2041709954490d323c044a"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"categories"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
+            </span><span class="pun">{</span><span class="pln">
+                </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"123"</span><span class="pun">,</span><span class="pln">
+                </span><span class="str">"name"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"成品油东营利津"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//分类名称</span><span class="pln">
+                </span><span class="str">"allowPush"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pln"> </span><span class="com">//0:不接收push, 1:接收push</span><span class="pln">
+            </span><span class="pun">}</span><span class="pln">
+        </span><span class="pun">]</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<hr>
+
+<h3 id="搜索信息">搜索信息</h3>
+
+<p><strong>url:</strong> <code>${domain}/sms/getMessageTrial.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">key</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户搜索时输入的关键字</span><span class="pln">
+ts</span><span class="pun">:</span><span class="pln"> </span><span class="pun">请求</span><span class="pln">timestamp</span><span class="pun">小于</span><span class="pln">ts</span><span class="pun">的条目，如果</span><span class="pln">ts</span><span class="pun">为空则取最新的</span><span class="pln">x</span><span class="pun">条数据，</span><span class="pln">x</span><span class="pun">由</span><span class="pln">getConfig</span><span class="pun">当中的[</span><span class="pln">pageSizeWhileSearchingLocalSMS</span><span class="pun">],决定默认</span><span class="lit">10</span><span class="pun">条</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln"> </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1406098260937"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"messages"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"2082039"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1405729431870"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"title"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"东明佳润化工1＃混"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"content"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"东明佳润化工1＃混合二甲苯6650元,2＃混合...."</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"replies"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupName"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pln">
+        </span><span class="pun">},</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"2081937"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"ts"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1405666443783"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"title"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"今日华北地区成品油"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"content"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"今日华北地区成品油价格维持稳定..."</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"replies"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"groupName"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pln">
+        </span><span class="pun">},</span><span class="pln">
+        </span><span class="pun">......</span><span class="pln">
+    </span><span class="pun">]</span><span class="pln">
+</span><span class="pun">}}</span></code></pre>
+
+<hr>
+
+<h3 id="获取信息的回复">获取信息的回复</h3>
+
+<p><strong>url:</strong> <code>${domain}/sms/getReplies.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span><span class="pln">
+id</span><span class="pun">:</span><span class="pln"> </span><span class="pun">信息的</span><span class="pln">id</span><span class="pun">(即</span><span class="pln">msgId</span><span class="pun">)</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln"> </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"94e8abedd5874263a89e30f2ade59c4b"</span><span class="pun">,</span><span class="com">//当前最新的令牌</span><span class="pln">
+    </span><span class="str">"replies"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"username"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"15821422479"</span><span class="pun">,</span><span class="pln">  </span><span class="com">//用户名,非用户实名</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1064825"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//信息Id</span><span class="pln">
+            </span><span class="str">"reply"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"abc你好啊！"</span><span class="pun">,</span><span class="com">//回复内容</span><span class="pln">
+            </span><span class="str">"replyTime"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1399439268560"</span><span class="pln"> </span><span class="com">//回复时间</span><span class="pln">
+        </span><span class="pun">},</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">"username"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"15821422479"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1064825"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"reply"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"测试回复信息"</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">"replyTime"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1399439696220"</span><span class="pln">
+        </span><span class="pun">}</span><span class="pln">
+    </span><span class="pun">]</span><span class="pln">
+</span><span class="pun">}}</span></code></pre>
+
+<hr>
+
+<h3 id="回复信息">回复信息</h3>
+
+<p><strong>url:</strong> <code>${domain}/sms/pushReply.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">accessToken</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户登录后所有请求均验证此</span><span class="pln">token</span><span class="pun">,</span><span class="pln"> </span><span class="pun">确保该用户身份</span><span class="pln">
+msgId</span><span class="pun">:</span><span class="pln"> </span><span class="pun">信息的</span><span class="pln">id</span><span class="pun">(即</span><span class="pln">msgId</span><span class="pun">)</span><span class="pln">
+username</span><span class="pun">:</span><span class="pln"> </span><span class="pun">用户名</span><span class="pln">
+reply</span><span class="pun">:</span><span class="pln"> </span><span class="pun">回复内容</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln"> </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln"> </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"94e8abedd5874263a89e30f2ade59c4b"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//当前最新的令牌</span><span class="pln">
+    </span><span class="str">"reply"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"username"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"15821422479"</span><span class="pun">,</span><span class="pln">  </span><span class="com">//用户名,非用户实名</span><span class="pln">
+        </span><span class="str">"msgId"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1064825"</span><span class="pun">,</span><span class="pln">     </span><span class="com">//信息id</span><span class="pln">
+        </span><span class="str">"reply"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"这是一条回复消息"</span><span class="pun">,</span><span class="pln">    </span><span class="com">//回复内容</span><span class="pln">
+        </span><span class="str">"replyTime"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1406099359134"</span><span class="pln">    </span><span class="com">//回复时间</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}}</span></code></pre></div></body>
+</html>

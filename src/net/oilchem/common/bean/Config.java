@@ -34,7 +34,7 @@ public class Config implements ServletContextListener {
     public static Integer getPushTimeInterval = 60;
 
     public static String login_success = "登录成功";
-    public static String login_faild = "登录失败";
+    public static String login_faild = "用户名或密码错误";
     public static String authentication_faild = "验证失败";
     public static String login_stop = "账号已停用";
 

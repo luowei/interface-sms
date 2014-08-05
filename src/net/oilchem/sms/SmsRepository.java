@@ -113,12 +113,14 @@ public class SmsRepository extends JdbcDaoSupport {
 
         int day = 0;
         String ts = "";
+        //没传日期
         if (sms.getTime() != null) {
             cal.setTime(sms.getTime());
             day = cal.get(Calendar.DAY_OF_YEAR);
             ts = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(sms.getTime());
         }
 
+        //如果没传或不等于today,取包括今天以及七天内的数据
         if (day != today) {
 
 

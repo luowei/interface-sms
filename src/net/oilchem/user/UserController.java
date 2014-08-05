@@ -58,7 +58,7 @@ public class UserController extends BaseController {
     @ResponseBody
     @RequestMapping("/noData")
     public String noData(HttpServletRequest request) {
-        return format(json_format, "1", "",
+        return format(json_format, "1", "请联系业务员确认短讯通服务是否已开通",
                 "\"accessToken\":\""+String.valueOf(request.getAttribute("accessToken"))+"\"");
     }
 

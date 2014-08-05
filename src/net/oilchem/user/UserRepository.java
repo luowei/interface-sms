@@ -47,7 +47,7 @@ public class UserRepository extends JdbcDaoSupport {
                     @Override
                     public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
                         PreparedStatement pst = con.prepareStatement(
-                                " select * from LZ_SMSUserMobile where user_mobile=? and User_PWD=? ");
+                                " select top 1 * from LZ_SMSUserMobile where user_mobile=? and User_PWD=? order by user_smsid desc ");
                         pst.setString(1, name);
                         pst.setString(2, pass);
                         return pst;
@@ -113,7 +113,7 @@ public class UserRepository extends JdbcDaoSupport {
                     @Override
                     public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
                         PreparedStatement pst = con.prepareStatement(
-                                " select * from LZ_SMSUserMobile where User_accessToken=?  ");
+                                " select top 1 * from LZ_SMSUserMobile where User_accessToken=?  order by user_smsid desc ");
                         pst.setString(1, token);
                         return pst;
                     }
@@ -169,7 +169,7 @@ public class UserRepository extends JdbcDaoSupport {
                     @Override
                     public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
                         PreparedStatement pst = con.prepareStatement(
-                                " select * from LZ_SMSUserMobile where User_accessTokenbak=?  ");
+                                " select top 1 * from LZ_SMSUserMobile where User_accessTokenbak=? order by user_smsid desc ");
                         pst.setString(1, token);
                         return pst;
                     }
