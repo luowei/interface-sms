@@ -21,3 +21,8 @@ Insert expert.dbo.Et_Sms (sms_phone,sms_message,sms_seq,sms_title,sms_time,sms_f
   Values('13801808080','您在本站申请了注册验证码，确认码为：2942',Null,'发送注册验证码'
          ,GetDate(),0,0,0,100,1,1,NULL,'192.168.1.76',NULL,NULL,'0',0,1,3,'系统','13801808080')
 
+
+
+SELECT sms_id ,sms_phone ,sms_message FROM ET_sms
+
+where sms_phone in (select user_mobile from LZ_SMSUSerMobile where user_push=1)

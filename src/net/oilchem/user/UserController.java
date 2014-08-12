@@ -3,6 +3,8 @@ package net.oilchem.user;
 import net.oilchem.common.BaseController;
 import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.common.utils.EHCacheUtil;
+import net.oilchem.notification.NotificationRepository;
+import net.oilchem.notification.NotificationSmsPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +42,9 @@ public class UserController extends BaseController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    NotificationRepository notificationRepository;
 
     @ResponseBody
     @RequestMapping("/loginFaild")
@@ -275,6 +280,25 @@ public class UserController extends BaseController {
     public String getAuthCode(){
         return format(json_format, "1", "",
                 "\"url\":\"http://android.oilchem.net/user/authCode.do\"");
+    }
+
+    @ResponseBody
+    @RequestMapping("/setNotification")
+    public String setNotification(String accessToken, NotificationSmsPool notify, HttpServletRequest request) {
+
+//        notificationRepository.setNotify(notify);
+
+        return format(json_format, "1", "",
+                "\"login\":\"1\",\"message\":\"已成功设置iOS的推送配置\"");
+    }
+
+    @ResponseBody
+    @RequestMapping("/getFaildNotification")
+    public String getFaildNotification(String accessToken, NotificationSmsPool notify, HttpServletRequest request) {
+
+
+        return format(json_format, "1", "",
+                "\"login\":\"1\",\"message\":\"\"");
     }
 
 }

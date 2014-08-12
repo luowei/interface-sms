@@ -38,6 +38,8 @@ public class Sms implements Serializable {
 
     String replies="";
 
+    String mobile;
+
 
     public Sms() {
     }
@@ -101,6 +103,15 @@ public class Sms implements Serializable {
             ts = String.valueOf(time.getTime());
         }
         return ts==null?"":ts;
+    }
+
+    @JsonIgnore
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
     public void setTs(String ts) {

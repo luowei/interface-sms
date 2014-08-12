@@ -42,6 +42,16 @@ public class Config implements ServletContextListener {
 
     public static Long inerCache_expire = 24 * 3600 * 1000L;
 
+    public static Boolean sendFlag = true;
+
+    public static String sound = "default";
+
+    public static String certificatePath = "certificate.p12";
+
+    public static String certificatePassword = "11223344";
+    public static long three_minute = 3*60*1000L;
+    public static boolean iOSPushSwitchOpen = true;
+
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
@@ -95,11 +105,37 @@ public class Config implements ServletContextListener {
 
         Long _inerCache_expire = Long.valueOf(map.get("inerCache_expire"));
         inerCache_expire = (_inerCache_expire != null && _inerCache_expire >= 0) ? _inerCache_expire : inerCache_expire;
+
+        Boolean _sendFlag = Boolean.valueOf(map.get("sendFlag"));
+        sendFlag = (_sendFlag != null)?_sendFlag:sendFlag;
+
+        String _sound = map.get("sound");
+        sound = (_sound != null && _sound !="")?_sound:sound;
+
+        String _certificatePath = map.get("certificatePath");
+        certificatePath = (_certificatePath != null && _certificatePath !="")?getConfigPath(_certificatePath):getConfigPath(certificatePath);
+
+        String _certificatePassword = map.get("certificatePassword");
+        certificatePassword = (_certificatePassword != null && _certificatePassword !="")?_certificatePassword:certificatePassword;
+
+        Long _three_minute = Long.valueOf(map.get("three_minute"));
+        three_minute = (_three_minute != null && _three_minute >= 0) ? _three_minute : three_minute;
     }
 
 
     private static String getConfigPath() {
         String configFilePath = Config.class.getClassLoader().getResource("config.properties").getPath().substring(1);
+        // 判断系统 linux，windows
+        if ("\\".equals(File.separator)) {
+            configFilePath = configFilePath.replace("%20", " ");
+        } else if ("/".equals(File.separator)) {
+            configFilePath = "/" + configFilePath.replace("%20", " ");
+        }
+        return configFilePath;
+    }
+
+    private String getConfigPath(String fileName) {
+        String configFilePath = Config.class.getClassLoader().getResource(fileName).getPath().substring(1);
         // 判断系统 linux，windows
         if ("\\".equals(File.separator)) {
             configFilePath = configFilePath.replace("%20", " ");

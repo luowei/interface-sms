@@ -51,6 +51,16 @@
         <url-pattern>*.do</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>iOSPush</servlet-name>
+        <servlet-class>net.oilchem.notification.IOSPushTaskServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>iOSPush</servlet-name>
+        <url-pattern>/iOSPush</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>

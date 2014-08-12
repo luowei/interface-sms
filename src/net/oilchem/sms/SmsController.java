@@ -142,7 +142,7 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/getReplies")
-    public JsonRet<Map> getReplies(String accessToken,String id,HttpServletRequest request){
+    public JsonRet<Map> getReplies(String accessToken, String id, HttpServletRequest request) {
         User user = EHCacheUtil.<User>getValue("smsUserCache",
                 String.valueOf(request.getAttribute("accessToken")));
 
@@ -160,16 +160,16 @@ public class SmsController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/pushReply")
-    public JsonRet<Map> pushReply(String accessToken,Reply reply,HttpServletRequest request){
+    public JsonRet<Map> pushReply(String accessToken, Reply reply, HttpServletRequest request) {
         User user = EHCacheUtil.<User>getValue("smsUserCache",
                 String.valueOf(request.getAttribute("accessToken")));
-        if(isBlank(reply.getUsername())){
+        if (isBlank(reply.getUsername())) {
             reply.setUsername(user.getUsername());
         }
         Map dataMap = new HashMap();
         Reply re = smsRepository.pushReply(reply);
 
-        dataMap.put("reply",re);
+        dataMap.put("reply", re);
         dataMap.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
         JsonRet<Map> ret = new JsonRet<Map>();
         ret.setData(dataMap);
@@ -196,10 +196,11 @@ public class SmsController extends BaseController {
         return ret;
     }
 
+
     @NeedLogin(false)
     @ResponseBody
     @RequestMapping("/clearGroupCache")
-    public String clearGroupCache(){
+    public String clearGroupCache() {
         InerCache.clearCache();
         return "var json = {'result':'1',message:'1'};";
     }
