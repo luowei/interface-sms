@@ -8,6 +8,7 @@ import javapns.notification.PushNotificationPayload;
 import javapns.notification.PushedNotification;
 import net.oilchem.common.bean.Config;
 import net.oilchem.sms.Sms;
+import net.oilchem.user.User;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +55,11 @@ public class NotificationRepository extends JdbcDaoSupport {
     //启动定时任务
     public void runTask() {
         logger.info("=========== start get call log task ===============");
-        if(Config.iOSPushSwitchOpen) {
+        if (Config.iOSPushSwitchOpen) {
             timer.schedule(new TargetTask(), 0);
         }
     }
+
     //停止定时任务
     public void stopTask() {
         logger.info("=========== stop get call log task ==============");
@@ -78,7 +80,7 @@ public class NotificationRepository extends JdbcDaoSupport {
 //            timer.purge();
             timer.schedule(new TargetTask(), Config.three_minute);
 
-            logger.info("========== get call log ==============");
+            logger.info("========== get push log ==============");
 
         }
     }
@@ -90,11 +92,39 @@ public class NotificationRepository extends JdbcDaoSupport {
         return notifyPool;
     }
 
+    public void addAppleDevice(User user) {
+        IOSDevice device = new IOSDevice(user.getImei(), user.getUsername());
+
+        //查出这个设备的信息
+        String sql = "select sms_id,sms_phone,sms_sendMsg_ID,sms_time,sms_message,sms_GroupId FROM ET_sms " +
+                "where sms_phone='" + user.getUsername() + "' and sms_phone in " +
+                " (select user_mobile from LZ_SMSUSerMobile where user_push=1) order by sms_phone";
+        List<Sms> smsList = getJdbcTemplate().query(sql, new RowMapper<Sms>() {
+            @Override
+            public Sms mapRow(ResultSet rs, int i) throws SQLException {
+                Sms sms = new Sms(
+                        rs.getInt("sms_id"),
+                        rs.getTimestamp("sms_time"),
+                        rs.getString("sms_message"),
+                        rs.getInt("sms_GroupId")
+                );
+                sms.setMsgId(String.valueOf(rs.getInt("sms_sendMsg_ID")));
+                sms.setMobile(rs.getString("sms_phone"));
+                return sms;
+            }
+        });
+        device.setSmsList(smsList);
+
+        //把这个设备的信息添加到通知池中
+        notifyPool.getMobileIOSDeviceMap().put(user.getUsername(), device);
+    }
+
     public void setIOSDevice() {
-        if (notifyPool != null && notifyPool.getiOSDevices() != null && !notifyPool.getiOSDevices().isEmpty()) {
+        if (notifyPool != null && notifyPool.getMobileIOSDeviceMap() != null && !notifyPool.getMobileIOSDeviceMap().isEmpty()) {
             return;
         }
 
+        //找出所有的设备构建一个设备池
 //        JdbcTemplate jdbcTemplate = new JdbcTemplate(BasicDataSource.class.cast(getCurrentWebApplicationContext().getBean("dataSource")));
         String sql = " select * from LZ_SMSUserMobile where User_push = 1 order by user_mobile asc,user_smsid desc";
         List<IOSDevice> devices = getJdbcTemplate().query(sql, new RowMapper<IOSDevice>() {
@@ -106,39 +136,50 @@ public class NotificationRepository extends JdbcDaoSupport {
                 );
             }
         });
-        List<IOSDevice> iOSDevices = new ArrayList<IOSDevice>();
-        Set<String> mobileSet = new HashSet<String>();
+        Map<String, IOSDevice> mobileDeviceMap = new HashMap<String, IOSDevice>();
         for (IOSDevice device : devices) {
-            if (!mobileSet.contains(device.getPhoneNumber())) {
-                mobileSet.add(device.getPhoneNumber());
-                iOSDevices.add(device);
+            if (!mobileDeviceMap.containsKey(device.getPhoneNumber())) {
+                mobileDeviceMap.put(device.getPhoneNumber(), device);
             }
         }
-        System.out.println("-------init NotificationSmsPool,iOSDevices size is:" + iOSDevices.size());
+        System.out.println("-------init NotificationSmsPool,iOSDevices size is:" + mobileDeviceMap.size());
 
-        notifyPool.setiOSDevices(iOSDevices);
+        notifyPool.setMobileIOSDeviceMap(mobileDeviceMap);
     }
 
     public NotificationSmsPool setIOSDeviceSmsList(Map<String, List<Sms>> smsMap) {
-        if (notifyPool.getiOSDevices() == null) {
+        if (notifyPool.getMobileIOSDeviceMap() == null) {
             setIOSDevice();
         }
-        for (IOSDevice iosDevice : notifyPool.getiOSDevices()) {
-            List<Sms> smsList = smsMap.get(iosDevice.getPhoneNumber());
+        for (String mobile : notifyPool.getMobileIOSDeviceMap().keySet()) {
+            List<Sms> smsList = smsMap.get(mobile);
             if (smsList != null) {
-                iosDevice.setSmsList(smsList);
+                notifyPool.getMobileIOSDeviceMap().get(mobile).setSmsList(smsList);
             }
         }
         return notifyPool;
     }
 
+    /**
+     * 获得所有的推送信息
+     *
+     * @return
+     */
     public Map<String, List<Sms>> getSmsMap() {
         String sql = "select sms_id,sms_phone,sms_sendMsg_ID,sms_time,sms_message,sms_GroupId FROM ET_sms " +
                 "where sms_phone in (select user_mobile from LZ_SMSUSerMobile where user_push=1) order by sms_phone";
         List<Sms> smsList = getJdbcTemplate().query(sql, new RowMapper<Sms>() {
             @Override
-            public Sms mapRow(ResultSet resultSet, int i) throws SQLException {
-                return null;
+            public Sms mapRow(ResultSet rs, int i) throws SQLException {
+                Sms sms = new Sms(
+                        rs.getInt("sms_id"),
+                        rs.getTimestamp("sms_time"),
+                        rs.getString("sms_message"),
+                        rs.getInt("sms_GroupId")
+                );
+                sms.setMsgId(String.valueOf(rs.getInt("sms_sendMsg_ID")));
+                sms.setMobile(rs.getString("sms_phone"));
+                return sms;
             }
         });
         Map<String, List<Sms>> smsMap = new HashMap<String, List<Sms>>();
@@ -168,10 +209,10 @@ public class NotificationRepository extends JdbcDaoSupport {
 
             PushNotificationManager pushManager = new PushNotificationManager();
             //true：表示的是产品发布推送服务 false：表示的是产品测试推送服务
-            pushManager.initializeConnection(new AppleNotificationServerBasicImpl(notifyPool.getCertificatePath(), notifyPool.getCertificatePassword(), false));
+            pushManager.initializeConnection(new AppleNotificationServerBasicImpl(notifyPool.getCertificatePath(), notifyPool.getCertificatePassword(), Config.push_production));
             List<PushedNotification> notifications = new ArrayList<PushedNotification>();
 
-            for (IOSDevice iosDevice : notifyPool.getiOSDevices()) {
+            for (IOSDevice iosDevice : notifyPool.getMobileIOSDeviceMap().values()) {
 
                 if (iosDevice.getSmsList() == null || iosDevice.getSmsList().get(0) != null) {
                     continue;

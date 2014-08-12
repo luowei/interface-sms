@@ -217,4 +217,9 @@ public class UserRepository extends JdbcDaoSupport {
                 " values('" + user.getUsername() + "','" + user.getImei() + "',getdate(),'" + ipAddr + "' ) ";
         return getJdbcTemplate().update(sql);
     }
+
+    public void updateApplePush(User user, String applePush) {
+        String sql = "update LZ_SMSUserMobile set User_push=" + applePush + " where user_mobile='" + user.getUsername() + "'";
+        getJdbcTemplate().update(sql);
+    }
 }

@@ -51,6 +51,7 @@ public class Config implements ServletContextListener {
     public static String certificatePassword = "11223344";
     public static long three_minute = 3*60*1000L;
     public static boolean iOSPushSwitchOpen = true;
+    public static boolean push_production=true;
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -120,6 +121,12 @@ public class Config implements ServletContextListener {
 
         Long _three_minute = Long.valueOf(map.get("three_minute"));
         three_minute = (_three_minute != null && _three_minute >= 0) ? _three_minute : three_minute;
+
+        Boolean _iOSPushSwitchOpen = Boolean.valueOf(map.get("iOSPushSwitchOpen"));
+        iOSPushSwitchOpen = (_iOSPushSwitchOpen != null) ? _iOSPushSwitchOpen : iOSPushSwitchOpen;
+
+        Boolean _push_production = Boolean.valueOf(map.get("push_production"));
+        push_production = (_push_production != null) ? _push_production : push_production;
     }
 
 

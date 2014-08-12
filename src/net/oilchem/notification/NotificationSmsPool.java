@@ -5,6 +5,7 @@ import net.oilchem.sms.Sms;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -13,7 +14,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public class NotificationSmsPool implements Serializable {
 
-    List<IOSDevice> iOSDevices;
+    Map<String,IOSDevice> mobileIOSDeviceMap;
 
     String certificatePath;
     String certificatePassword;
@@ -100,12 +101,12 @@ public class NotificationSmsPool implements Serializable {
         }
     }
 
-    public List<IOSDevice> getiOSDevices() {
-        return iOSDevices;
+    public Map<String, IOSDevice> getMobileIOSDeviceMap() {
+        return mobileIOSDeviceMap;
     }
 
-    public void setiOSDevices(List<IOSDevice> iOSDevices) {
-        this.iOSDevices = iOSDevices;
+    public void setMobileIOSDeviceMap(Map<String, IOSDevice> mobileIOSDeviceMap) {
+        this.mobileIOSDeviceMap = mobileIOSDeviceMap;
     }
 
     public String getCertificatePath() {

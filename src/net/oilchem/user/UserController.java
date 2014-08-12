@@ -69,7 +69,7 @@ public class UserController extends BaseController {
 
     @ResponseBody
     @RequestMapping("/userLogin")
-    public String login(HttpServletRequest request, User user) {
+    public String login(HttpServletRequest request, User user,String applePush) {
 
         String username = user.getUsername();
 //        String password = (user.getPassword() != null ? generatePassword(user.getPassword()) : user.getPassword());
@@ -114,6 +114,10 @@ public class UserController extends BaseController {
             }else {
                 userRepository.updateLoginInfo2(user);
                 userRepository.addImei(user,user.getLastIp());
+            }
+            if(isNotBlank(applePush) && applePush.trim().equals("1")){
+                userRepository.updateApplePush(user,applePush);
+                notificationRepository.addAppleDevice(user);
             }
             return format(json_format, "1", "",
                     "\"login\":\"1\",\"username\":\""+user.getRealName()+"\",\"message\":\"" + login_success + "\",\"accessToken\":\"" + user.getAccessToken() + "\"");
