@@ -93,6 +93,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
 
 //                        EHCacheUtil.<String>setValue("userGroups", user.getUsername(), smsRepository.getPushGroupsStr(user));
                     } else {
+                        //每次请求更新accessToken
                         userRepository.updateAccessTokenbak(accessToken);
                         token = randomUUID().toString().replace("-", "");
                     }

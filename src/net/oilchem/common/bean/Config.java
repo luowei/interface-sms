@@ -49,9 +49,10 @@ public class Config implements ServletContextListener {
     public static String certificatePath = "certificate.p12";
 
     public static String certificatePassword = "11223344";
-    public static long three_minute = 3*60*1000L;
+    public static Long three_minute = 3*60*1000L;
     public static boolean iOSPushSwitchOpen = true;
     public static boolean push_production=true;
+    public static Long lastPushTime=0L;
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -127,6 +128,13 @@ public class Config implements ServletContextListener {
 
         Boolean _push_production = Boolean.valueOf(map.get("push_production"));
         push_production = (_push_production != null) ? _push_production : push_production;
+
+        Long _lastPushTime = Long.valueOf(map.get("lastPushTime"));
+        lastPushTime = (_lastPushTime != null && _lastPushTime >= 0) ? _three_minute : lastPushTime;
+    }
+
+    public static void setConfig(String key,String value,String comment){
+        PropertiesUtil.writeProperties(key,value,comment);
     }
 
 
@@ -226,13 +234,17 @@ public class Config implements ServletContextListener {
         /**
          * 写入properties信息
          */
-        public static Boolean writeProperties(String key, String value) {
+        public static Boolean writeProperties(String key, String value,String comment) {
             OutputStream fos = null;
             try {
                 fos = new FileOutputStream(fileName);
                 props.setProperty(key, value);
                 // 将此 Properties 表中的属性列表（键和元素对）写入输出流
-                props.store(fos, "『comments』Update key：" + key);
+                if(comment!=null) {
+                    props.store(fos, comment + " \n " + key);
+                }else{
+                    props.store(fos,"");
+                }
                 return true;
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);

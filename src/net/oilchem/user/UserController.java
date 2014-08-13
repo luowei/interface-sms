@@ -126,6 +126,27 @@ public class UserController extends BaseController {
                 "\"login\":\"0\",\"username\":\"\",\"message\":\"" + login_faild + "\",\"accessToken\":\"\"");
     }
 
+    @NeedLogin
+    @ResponseBody
+    @RequestMapping("/updateDeviceToken")
+    public String  updateDeviceToken(HttpServletRequest request,String deviceToken,String username, String accessToken){
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+        if (user == null) {
+            user = (user==null?userRepository.findByAccessToken(accessToken):user);
+        }
+        if (user!=null) {
+            userRepository.updateDeviceToken(username,deviceToken);
+        }else{
+            return format(json_format, "1", "",
+                    "\"login\":\"0\",\"message\":\"更新deviceToken失败\",\"accessToken\":\"\"");
+        }
+
+        return format(json_format, "1", "",
+                "\"login\":\"1\",\"message\":\"更新deviceToken成功\",\"accessToken\":\"" + user.getAccessToken() + "\"");
+    }
+
+    @NeedLogin
     @ResponseBody
     @RequestMapping("/userLogout")
     public String logout(HttpServletRequest request, String accessToken) {

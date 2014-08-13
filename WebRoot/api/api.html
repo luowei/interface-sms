@@ -22,7 +22,8 @@ data</span><span class="pun">：数据内容</span></code></pre>
 
 <pre class="prettyprint prettyprinted"><code><span class="pln">username</span><span class="pun">：用户名</span><span class="pln">
 password</span><span class="pun">：</span><span class="pln">md5</span><span class="pun">后的密码</span><span class="pln">
-imei</span><span class="pun">：设备唯一标识码</span></code></pre>
+imei</span><span class="pun">：设备唯一标识码</span><span class="pln">
+applePush</span><span class="pun">:</span><span class="pln">ios</span><span class="pun">设备必选参数,</span><span class="lit">1</span><span class="pun">表</span><span class="pln">ios</span><span class="pun">设备;留空或不传表示其他设备</span></code></pre>
 
 <p><strong>结果数据:</strong></p>
 
@@ -31,6 +32,25 @@ imei</span><span class="pun">：设备唯一标识码</span></code></pre>
     </span><span class="str">"username"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"张三"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//用户实名</span><span class="pln">
     </span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"登录成功"</span><span class="pun">,</span><span class="pln"> </span><span class="com">//如果登录失败则返回失败原因</span><span class="pln">
     </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1b4df9c2a9b14e7e92438aa56f7c43ed"</span><span class="pln"> </span><span class="com">//返回的令牌</span><span class="pln">
+</span><span class="pun">}</span><span class="pln"> </span><span class="pun">}</span></code></pre>
+
+<hr>
+
+<h3 id="ios更新devicetoken">iOS更新deviceToken</h3>
+
+<p><strong>url:</strong> <code>${domain}/user/updateDeviceToken.do</code> <br>
+    <strong>请求参数：</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pln">username</span><span class="pun">：用户名</span><span class="pln">
+deviceToken</span><span class="pun">：</span><span class="pln">deviceToken</span><span class="pun">设备令牌串</span><span class="pln">
+accessToken</span><span class="pun">：用户验证令牌</span></code></pre>
+
+<p><strong>结果数据:</strong></p>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="str">"stat"</span><span class="pun">:</span><span class="pln"> </span><span class="lit">1</span><span class="pun">,</span><span class="pln"> </span><span class="str">"error"</span><span class="pun">:</span><span class="pln"> </span><span class="str">""</span><span class="pun">,</span><span class="pln"> </span><span class="str">"data"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"login"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"1"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"更新deviceToken成功"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"accessToken"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"04c0a30aee7841349363e3b36e62360d"</span><span class="pln">
 </span><span class="pun">}</span><span class="pln"> </span><span class="pun">}</span></code></pre>
 
 <hr>

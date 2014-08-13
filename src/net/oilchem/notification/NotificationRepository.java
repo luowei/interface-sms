@@ -14,12 +14,14 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static net.oilchem.notification.NotificationSmsPool.IOSDevice;
@@ -54,7 +56,7 @@ public class NotificationRepository extends JdbcDaoSupport {
 
     //启动定时任务
     public void runTask() {
-        logger.info("=========== start get call log task ===============");
+        logger.info("=========== start get push log task ===============");
         if (Config.iOSPushSwitchOpen) {
             timer.schedule(new TargetTask(), 0);
         }
@@ -62,7 +64,7 @@ public class NotificationRepository extends JdbcDaoSupport {
 
     //停止定时任务
     public void stopTask() {
-        logger.info("=========== stop get call log task ==============");
+        logger.info("=========== stop get push log task ==============");
         timer.cancel();
     }
 
@@ -95,9 +97,13 @@ public class NotificationRepository extends JdbcDaoSupport {
     public void addAppleDevice(User user) {
         IOSDevice device = new IOSDevice(user.getImei(), user.getUsername());
 
+
+        Config.lastPushTime = Config.lastPushTime.equals(0L)?new Date().getTime():Config.lastPushTime;
+        String lastPushTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Config.lastPushTime);
+
         //查出这个设备的信息
         String sql = "select sms_id,sms_phone,sms_sendMsg_ID,sms_time,sms_message,sms_GroupId FROM ET_sms " +
-                "where sms_phone='" + user.getUsername() + "' and sms_phone in " +
+                "where sms_phone='" + user.getUsername() + "' and sms_time >'"+lastPushTimeStr+"'  and sms_phone in " +
                 " (select user_mobile from LZ_SMSUSerMobile where user_push=1) order by sms_phone";
         List<Sms> smsList = getJdbcTemplate().query(sql, new RowMapper<Sms>() {
             @Override
@@ -117,7 +123,18 @@ public class NotificationRepository extends JdbcDaoSupport {
 
         //把这个设备的信息添加到通知池中
         notifyPool.getMobileIOSDeviceMap().put(user.getUsername(), device);
+
+        updateLastPushTime();
     }
+
+    private void updateLastPushTime() {
+        SqlRowSet rowSet = getJdbcTemplate().queryForRowSet("select getdate() as lastPushTime");
+        if(rowSet.next()) {
+            Config.lastPushTime = rowSet.getTimestamp("lastPushTime").getTime();
+            Config.setConfig("lastPushTime", String.valueOf(Config.lastPushTime), null);
+        }
+    }
+
 
     public void setIOSDevice() {
         if (notifyPool != null && notifyPool.getMobileIOSDeviceMap() != null && !notifyPool.getMobileIOSDeviceMap().isEmpty()) {
@@ -131,7 +148,7 @@ public class NotificationRepository extends JdbcDaoSupport {
             @Override
             public IOSDevice mapRow(ResultSet rs, int i) throws SQLException {
                 return new IOSDevice(
-                        rs.getString("User_IMEI"),
+                        rs.getString("user_deviceToken"),
                         rs.getString("user_mobile")
                 );
             }
@@ -166,8 +183,11 @@ public class NotificationRepository extends JdbcDaoSupport {
      * @return
      */
     public Map<String, List<Sms>> getSmsMap() {
+        Config.lastPushTime = Config.lastPushTime.equals(0L)?new Date().getTime():Config.lastPushTime;
+        String lastPushTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Config.lastPushTime);
+
         String sql = "select sms_id,sms_phone,sms_sendMsg_ID,sms_time,sms_message,sms_GroupId FROM ET_sms " +
-                "where sms_phone in (select user_mobile from LZ_SMSUSerMobile where user_push=1) order by sms_phone";
+                "where sms_time >'"+lastPushTimeStr+"' and  sms_phone in (select user_mobile from LZ_SMSUSerMobile where user_push=1) order by sms_phone";
         List<Sms> smsList = getJdbcTemplate().query(sql, new RowMapper<Sms>() {
             @Override
             public Sms mapRow(ResultSet rs, int i) throws SQLException {
@@ -182,6 +202,8 @@ public class NotificationRepository extends JdbcDaoSupport {
                 return sms;
             }
         });
+        updateLastPushTime();
+
         Map<String, List<Sms>> smsMap = new HashMap<String, List<Sms>>();
         for (Sms sms : smsList) {
             if (!smsMap.containsKey(sms.getMobile())) {

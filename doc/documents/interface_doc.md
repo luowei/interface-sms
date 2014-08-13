@@ -18,6 +18,7 @@ data：数据内容
 username：用户名
 password：md5后的密码
 imei：设备唯一标识码
+applePush:ios设备必选参数,1表ios设备;留空或不传表示其他设备
 ```
 
 **结果数据:**
@@ -30,6 +31,27 @@ imei：设备唯一标识码
 } }
 ```
 
+
+----------
+
+### iOS更新deviceToken###
+
+**url:** `${domain}/user/updateDeviceToken.do`
+**请求参数：**
+```
+username：用户名
+deviceToken：deviceToken设备令牌串
+accessToken：用户验证令牌
+```
+
+**结果数据:**
+```
+{"stat": 1, "error": "", "data": {
+    "login": "1",
+    "message": "更新deviceToken成功",
+    "accessToken": "04c0a30aee7841349363e3b36e62360d"
+} }
+```
 
 ----------
 

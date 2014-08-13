@@ -222,4 +222,9 @@ public class UserRepository extends JdbcDaoSupport {
         String sql = "update LZ_SMSUserMobile set User_push=" + applePush + " where user_mobile='" + user.getUsername() + "'";
         getJdbcTemplate().update(sql);
     }
+
+    public void updateDeviceToken(String username, String deviceToken) {
+        String sql = "update LZ_SMSUserMobile set user_deviceToken='"+deviceToken+"' where user_mobile='"+username+"' ";
+        getJdbcTemplate().update(sql);
+    }
 }
