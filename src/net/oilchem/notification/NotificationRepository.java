@@ -128,7 +128,7 @@ public class NotificationRepository extends JdbcDaoSupport {
 
     private void updateLastPushTime() {
         Config.lastPushTime = getNowtime();
-        Config.setConfig("lastPushTime", String.valueOf(Config.lastPushTime), null);
+        Config.setStoreProperties("lastPushTime", String.valueOf(Config.lastPushTime), null);
     }
 
 

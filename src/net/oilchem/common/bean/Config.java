@@ -20,7 +20,7 @@ import java.util.Properties;
  */
 public class Config implements ServletContextListener {
 
-
+    public static String storeProperties_fileName = getStorePropertiesPath();
 
     public static String properties_fileName = getConfigPath();
     public static Integer session_max_interval = 300;
@@ -57,6 +57,7 @@ public class Config implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
 
+        Map<String, String> storeMap = PropertiesUtil.getStoreAllProperty();
 
         Map<String, String> map = PropertiesUtil.getAllProperty();
         if (map == null || map.isEmpty()) {
@@ -129,17 +130,30 @@ public class Config implements ServletContextListener {
         Boolean _push_production = Boolean.valueOf(map.get("push_production"));
         push_production = (_push_production != null) ? _push_production : push_production;
 
-        Long _lastPushTime = Long.valueOf(map.get("lastPushTime"));
+
+        //-----storeMap----------
+        Long _lastPushTime = Long.valueOf(storeMap.get("lastPushTime"));
         lastPushTime = (_lastPushTime != null && _lastPushTime >= 0) ? _lastPushTime : lastPushTime;
     }
 
-    public static void setConfig(String key,String value,String comment){
-        PropertiesUtil.writeProperties(key,value,comment);
+    public static void setStoreProperties(String key, String value, String comment){
+        PropertiesUtil.writeStoreProperties(key, value, comment);
     }
 
 
     private static String getConfigPath() {
         String configFilePath = Config.class.getClassLoader().getResource("config.properties").getPath().substring(1);
+        // 判断系统 linux，windows
+        if ("\\".equals(File.separator)) {
+            configFilePath = configFilePath.replace("%20", " ");
+        } else if ("/".equals(File.separator)) {
+            configFilePath = "/" + configFilePath.replace("%20", " ");
+        }
+        return configFilePath;
+    }
+
+    private static String getStorePropertiesPath() {
+        String configFilePath = Config.class.getClassLoader().getResource("store.properties").getPath().substring(1);
         // 判断系统 linux，windows
         if ("\\".equals(File.separator)) {
             configFilePath = configFilePath.replace("%20", " ");
@@ -177,6 +191,8 @@ public class Config implements ServletContextListener {
 
         private static Properties props;
         private static String fileName = properties_fileName;
+        private static Properties storeProps;
+        private static String storeFileName = storeProperties_fileName;
 
         private static void readProperties() {
             FileInputStream fis = null;
@@ -200,12 +216,38 @@ public class Config implements ServletContextListener {
             }
         }
 
+        private static void readStoreProperties() {
+            FileInputStream fis = null;
+            try {
+                if (storeProps == null) {
+                    storeProps = new Properties();
+                }
+                fis = new FileInputStream(storeFileName);
+                InputStreamReader is = new InputStreamReader(fis,"UTF-8");
+                storeProps.load(is);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            } finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
         /**
          * 获取某个属性
          */
         public static String getProperty(String key) {
             readProperties();
             return props.getProperty(key);
+        }
+        public static String getStoreProperty(String key) {
+            readStoreProperties();
+            return storeProps.getProperty(key);
         }
 
         /**
@@ -219,6 +261,18 @@ public class Config implements ServletContextListener {
             while (enu.hasMoreElements()) {
                 String key = (String) enu.nextElement();
                 String value = props.getProperty(key);
+                map.put(key, (value!=null?value.trim():"") );
+            }
+            return map;
+        }
+
+        public static Map<String, String> getStoreAllProperty() {
+            Map<String, String> map = new HashMap<String, String>();
+            readStoreProperties();
+            Enumeration enu = storeProps.propertyNames();
+            while (enu.hasMoreElements()) {
+                String key = (String) enu.nextElement();
+                String value = storeProps.getProperty(key);
                 map.put(key, (value!=null?value.trim():"") );
             }
             return map;
@@ -259,6 +313,33 @@ public class Config implements ServletContextListener {
                 }
             }
         }
+        public static Boolean writeStoreProperties(String key, String value,String comment) {
+            OutputStream fos = null;
+            try {
+                fos = new FileOutputStream(storeFileName);
+                storeProps.setProperty(key, value);
+                // 将此 Properties 表中的属性列表（键和元素对）写入输出流
+                if(comment!=null) {
+                    storeProps.store(fos, comment + " \n " + key);
+                }else{
+                    storeProps.store(fos,"");
+                }
+                return true;
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+                return false;
+            } finally {
+                if (fos != null) {
+                    try {
+                        fos.close();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
+
         //    public static void main(String[] args) {
         //        PropertiesUtil util=new PropertiesUtil("config.properties");
         //        System.out.println("ip=" + util.getProperty("ip"));
