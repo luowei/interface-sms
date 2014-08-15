@@ -98,7 +98,7 @@ public class UserInterceptor extends HandlerInterceptorAdapter {
                         token = randomUUID().toString().replace("-", "");
                     }
 
-                    if(request.getRequestURI().equals("/sms/getPushSMS.do")) {
+                    if(request.getRequestURI().equals("/sms/getPushSMS.do") || request.getRequestURI().equals("/sms/getIOSPushSMS.do") ) {
                         EHCacheUtil.<String>setValue("userGroups", user.getUsername(), smsRepository.getPushGroupsStr(user));
                     }
 

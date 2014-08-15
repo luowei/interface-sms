@@ -1,7 +1,10 @@
 package net.oilchem.sms;
 
+import net.oilchem.common.bean.Config;
 import net.oilchem.common.utils.EHCacheUtil;
+import net.oilchem.notification.IOSPush;
 import net.oilchem.user.User;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -19,8 +22,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static net.oilchem.common.bean.Config.global_groups;
-import static net.oilchem.common.bean.Config.pageSizeWhileSearchingLocalSMS;
+import static net.oilchem.common.bean.Config.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -359,5 +361,70 @@ public class SmsRepository extends JdbcDaoSupport {
         getJdbcTemplate().update(msgSql);
         reply.setReplyTime(String.valueOf(time.getTime()));
         return reply;
+    }
+
+    public List<Sms> getIOSPushSmsList(User user, IOSPush iosPush) {
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        if(lastPushTime==0L){
+            lastPushTime = new Date().getTime()-10000;
+        }
+
+        Long startTime = null,endTime=null;
+        //当allFlag为null或者为0时查询所有，与getMessages无异
+        Integer allFlag = null;
+        if(iosPush!=null){
+            startTime = iosPush.getStartTime();
+            endTime = iosPush.getEndTime();
+            allFlag = iosPush.getAllFlag();
+        }
+
+        String lastPushTimeStr = sdf.format(lastPushTime);
+        if(startTime!=null && startTime > 0L){
+            lastPushTimeStr = sdf.format(startTime);
+        }
+
+        String sql = "select sms_id,sms_phone,sms_sendMsg_ID,sms_time,sms_message,sms_GroupId FROM ET_sms " +
+                "where 1=1 and sms_GroupId > 0  and sms_time >'"+lastPushTimeStr+"' " +
+                " and sms_phone in  (select user_mobile from LZ_SMSUSerMobile where user_push=1) ";
+
+        if(endTime!=null && endTime > 0L){
+            sql = sql + " and sms_time <= '"+sdf.format(endTime)+"' ";
+        }
+        if(user!=null && StringUtils.isNotBlank(user.getUsername())){
+            sql = sql+" and sms_phone='" + user.getUsername() + "' ";
+
+            if(allFlag==null || !allFlag.equals(1)) {
+                Boolean hasPushGroups = EHCacheUtil.<Boolean>getValue("userGroupPush", user.getUsername());
+                if (hasPushGroups != null && hasPushGroups) {
+                    String groups = EHCacheUtil.<String>getValue("userGroups", user.getUsername());
+                    sql = sql + " and sms_GroupId in (" + (isBlank(groups) ? getPushGroupsStr(user) : groups) + ")";
+                }
+            }
+        }else if(user==null && (allFlag==null || !allFlag.equals(1)) ){
+            sql = sql + " and (sms_GroupId in (select sendList_GroupID from LZ_SMSSendList where SendList_Push = 1 ) ";
+            if(StringUtils.isNotBlank(Config.global_groups)){
+                sql = sql + " or sms_GroupId in("+Config.global_groups+") ";
+            }
+            sql = sql + " ) ";
+        }
+
+
+        sql = sql + " order by sms_phone asc, sms_time desc ";
+
+        return getJdbcTemplate().query(sql, new RowMapper<Sms>() {
+            @Override
+            public Sms mapRow(ResultSet rs, int i) throws SQLException {
+                Sms sms = new Sms(
+                        rs.getInt("sms_id"),
+                        rs.getTimestamp("sms_time"),
+                        rs.getString("sms_message"),
+                        rs.getInt("sms_GroupId")
+                );
+                sms.setMsgId(String.valueOf(rs.getInt("sms_sendMsg_ID")));
+                sms.setMobile(rs.getString("sms_phone"));
+                return sms;
+            }
+        });
     }
 }

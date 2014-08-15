@@ -49,7 +49,7 @@ public class Config implements ServletContextListener {
     public static String certificatePath = "certificate.p12";
 
     public static String certificatePassword = "11223344";
-    public static Long three_minute = 3*60*1000L;
+    public static Long iOSPushIdle = 3*60*1000L;
     public static boolean iOSPushSwitchOpen = true;
     public static boolean push_production=true;
     public static Long lastPushTime=0L;
@@ -120,8 +120,8 @@ public class Config implements ServletContextListener {
         String _certificatePassword = map.get("certificatePassword");
         certificatePassword = (_certificatePassword != null && _certificatePassword !="")?_certificatePassword:certificatePassword;
 
-        Long _three_minute = Long.valueOf(map.get("three_minute"));
-        three_minute = (_three_minute != null && _three_minute >= 0) ? _three_minute : three_minute;
+        Long _iOSPushIdle = Long.valueOf(map.get("iOSPushIdle"));
+        iOSPushIdle = (_iOSPushIdle != null && _iOSPushIdle >= 0) ? _iOSPushIdle : iOSPushIdle;
 
         Boolean _iOSPushSwitchOpen = Boolean.valueOf(map.get("iOSPushSwitchOpen"));
         iOSPushSwitchOpen = (_iOSPushSwitchOpen != null) ? _iOSPushSwitchOpen : iOSPushSwitchOpen;
@@ -130,7 +130,7 @@ public class Config implements ServletContextListener {
         push_production = (_push_production != null) ? _push_production : push_production;
 
         Long _lastPushTime = Long.valueOf(map.get("lastPushTime"));
-        lastPushTime = (_lastPushTime != null && _lastPushTime >= 0) ? _three_minute : lastPushTime;
+        lastPushTime = (_lastPushTime != null && _lastPushTime >= 0) ? _lastPushTime : lastPushTime;
     }
 
     public static void setConfig(String key,String value,String comment){

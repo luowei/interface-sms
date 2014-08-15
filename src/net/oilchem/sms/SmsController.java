@@ -5,6 +5,7 @@ import net.oilchem.common.bean.InerCache;
 import net.oilchem.common.bean.JsonRet;
 import net.oilchem.common.bean.NeedLogin;
 import net.oilchem.common.utils.EHCacheUtil;
+import net.oilchem.notification.IOSPush;
 import net.oilchem.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,6 +47,25 @@ public class SmsController extends BaseController {
         map.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
 
         List<Sms> smsList = smsRepository.getPushSMS(user, sms);
+
+        map.put("messages", smsList);
+        JsonRet<Map> ret = new JsonRet<Map>();
+        ret.setData(map);
+        return ret;
+    }
+
+    @ResponseBody
+    @RequestMapping("/getIOSPushSMS")
+    public JsonRet<Map> getIOSPushSMS(HttpServletRequest request, IOSPush iosPush, String accessToken) {
+
+        User user = EHCacheUtil.<User>getValue("smsUserCache",
+                String.valueOf(request.getAttribute("accessToken")));
+
+        Map map = new HashMap();
+        map.put("ts", String.valueOf(new Date().getTime()));
+        map.put("accessToken", String.valueOf(request.getAttribute("accessToken")));
+
+        List<Sms> smsList = smsRepository.getIOSPushSmsList(user, iosPush);
 
         map.put("messages", smsList);
         JsonRet<Map> ret = new JsonRet<Map>();
