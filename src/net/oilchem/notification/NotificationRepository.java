@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
+import static net.oilchem.common.bean.Config.lastPushTime;
 import static net.oilchem.notification.NotificationSmsPool.IOSDevice;
 
 /**
@@ -127,8 +128,8 @@ public class NotificationRepository extends JdbcDaoSupport {
     }
 
     private void updateLastPushTime() {
-        Config.lastPushTime = getNowtime();
-        Config.setStoreProperties("lastPushTime", String.valueOf(Config.lastPushTime), null);
+        lastPushTime = getNowtime();
+        Config.setStoreProperties("lastPushTime", String.valueOf(lastPushTime), null);
     }
 
 
@@ -194,7 +195,7 @@ public class NotificationRepository extends JdbcDaoSupport {
                 payLoad.addAlert(iosDevice.getSmsList().get(0).getContent()); // 消息内容
                 payLoad.addBadge(iosDevice.getBadge()); // iphone应用图标上小红圈上的数值
 
-                payLoad.addCustomDictionary("startTime", Config.lastPushTime);
+                payLoad.addCustomDictionary("startTime", lastPushTime);
                 endTime = getNowtime();
                 payLoad.addCustomDictionary("endTime", endTime);
 
