@@ -3,7 +3,7 @@
 
 **说明:**
 ```
-${domain}=http://android.oilchem.net;应用根路径
+${domain}=http://android.rootls.com;应用根路径
 ${accessToken}=accessToken;令牌
 stat：结果状态码,1表示成功，0表示失败
 error：stat为0时，提供错误信息
@@ -56,45 +56,6 @@ accessToken：用户验证令牌
 ----------
 
 
-### 用户注册###
-
-*注册，请求验证码只支持 **Post** 方式; 在本Request之前，需要通过手机获取一个验证码*
-####请求手机验证码####
-**请求地址:** 
-```
-http://www.oilchem.net/reg/getcode/?clientid=UserName&UserName=${用户手机号码}
-```
-**结果数据:**
-```
-{"stat": "1","error": "","data": {"getcode": "0","message": "请输入正确的手机号"}} 
-{"stat": "1","error": "","data": {"getcode": "0","message": "手机号码已经被其他人注册！"}} 
-{"stat": "1","error": "","data": {"getcode": "1","message": "确认码已经发送到13000000012，请稍候查收。"}}
-```
-**示例如图：**
-![demo](http://android.oilchem.net/api/aa.png)
-
-
-####注册####
-**url:** `http://www.oilchem.net/reg/?action=android`
-**请求参数：**
-```
-UserName: 用户手机号码
-vkey: 验证码，用于防止恶意注册
-PassWord: 密码
-```
-
-**结果数据:**
-```
-{"stat": "1","error": "","data": {"register": "0","message": "请输入正确的手机号"}} 
-{"stat": "1","error": "","data": {"register": "0","message": "注册确认码输入错误！"}} 
-{"stat": "1","error": "","data": {"register": "0","message": "手机已经注册短讯用户！"}} 
-{"stat": "1","error": "","data": {"register": "1","message": "注册成功。请等待客服联系，为您开通功能。"}}
-```
-
-
-----------
-
-
 ### 检查更新###
 
 **url:** `${domain}/user/updateApp.do`
@@ -110,7 +71,7 @@ version: 当前应用版本号(如：1.0)
     "error": "",
     "data": {
         "update": "1", //0: 不需要更新  1: 需要更新
-        "downloadUrl": "http://www.oilchem.net/download/android/sms.apk" //如果update为0,则不需要更新,这里返回空即可.
+        "downloadUrl": "http://www.rootls.com/download/android/sms.apk" //如果update为0,则不需要更新,这里返回空即可.
     }
 }
 ```
@@ -174,7 +135,7 @@ accessToken: 用户登录后所有请求均验证此token, 确保该用户身份
             "customerServiceNumber": "0533-2591688",
             "pageSizeWhileSearchingLocalSMS": "10",
             "latestAppVersion": "1.0", //如果此版本大于本地版本，则跳出提示框来通过appDownload地址升级
-            "appDownload": "http://www.oilchem.net/download/android/sms.apk",
+            "appDownload": "http://www.rootls.com/download/android/sms.apk",
             "getPushTimeInterval": "30" //获取push内容的轮询请求时间间隔 ,30指的是30秒
         }
     }
