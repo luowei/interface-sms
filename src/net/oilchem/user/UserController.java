@@ -146,7 +146,7 @@ public class UserController extends BaseController {
                 "\"login\":\"1\",\"message\":\"更新deviceToken成功\",\"accessToken\":\"" + user.getAccessToken() + "\"");
     }
 
-    @NeedLogin
+//    @NeedLogin
     @ResponseBody
     @RequestMapping("/userLogout")
     public String logout(HttpServletRequest request, String accessToken) {
