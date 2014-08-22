@@ -38,7 +38,7 @@
     <mvc:default-servlet-handler/>
 
     <mvc:interceptors>
-        <bean class="net.oilchem.common.UserInterceptor"/>
+        <bean class="com.rootls.common.UserInterceptor"/>
     </mvc:interceptors>
 
     <bean id="viewResolver"
@@ -53,7 +53,7 @@
             />
     <bean name="flashMapManager" class="org.springframework.web.servlet.support.SessionFlashMapManager"/>
 
-    <bean id="exceptionResolver" class="net.oilchem.common.ExceptionHandler"/>
+    <bean id="exceptionResolver" class="com.rootls.common.ExceptionHandler"/>
 
     <!-- exception mapping -->
     <!--<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">-->

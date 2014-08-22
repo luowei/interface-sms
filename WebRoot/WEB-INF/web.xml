@@ -16,7 +16,7 @@
 
     <!-- config listener -->
     <listener>
-        <listener-class>net.oilchem.common.bean.Config</listener-class>
+        <listener-class>com.rootls.common.bean.Config</listener-class>
     </listener>
 
     <filter>
@@ -34,7 +34,7 @@
     <!-- 过滤参数 -->
     <filter>
         <filter-name>argumentFilter</filter-name>
-        <filter-class>net.oilchem.common.ArgumentFilter</filter-class>
+        <filter-class>com.rootls.common.ArgumentFilter</filter-class>
     </filter>
     <filter-mapping>
         <filter-name>argumentFilter</filter-name>
@@ -53,7 +53,7 @@
 
     <servlet>
         <servlet-name>iOSPush</servlet-name>
-        <servlet-class>net.oilchem.notification.IOSPushTaskServlet</servlet-class>
+        <servlet-class>com.rootls.notification.IOSPushTaskServlet</servlet-class>
         <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>
