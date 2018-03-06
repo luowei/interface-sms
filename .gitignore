@@ -21,6 +21,7 @@ Thumbs.db
 .metadata
 .classpath
 classes/**
+out/
 bin/**
 tmp/**
 tmp/**/*
